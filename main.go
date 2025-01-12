@@ -1,15 +1,31 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
-    "log"
+	"log"
 	"os"
 	"os/exec"
 
 	"github.com/sneaky-potato/g4th/compiler"
 	"github.com/sneaky-potato/g4th/lexer"
 )
+
+func callCmd(cmd string, args ...string) {
+    command := exec.Command(cmd, args...)
+    var outb, errb bytes.Buffer
+    command.Stdout = &outb
+    command.Stderr = &errb
+    fmt.Printf("%s ", cmd)
+    fmt.Println(args)
+
+    if err := command.Run(); err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Printf("%s", outb.String())
+}
 
 func usage(program string) {
 	fmt.Printf("Usage: %s <OPTION> [ARGS]\n", program)
@@ -44,25 +60,12 @@ func main() {
 
         compiler.CompileToAsm("output.asm", program)
 
-        cmd := exec.Command("nasm", "-felf64", "output.asm")
-        _, err := cmd.Output()
+        callCmd("nasm", "-felf64", "output.asm")
+        callCmd("ld", "-o", "output", "output.o")
 
-        if err != nil {
-            log.Fatal(err)
-            return
-        }
-
-        cmd = exec.Command("ld", "-o", "output", "output.o")
-
-        _, err = cmd.Output()
-
-        if err != nil {
-            log.Fatal(err)
-            return
-        }
 
         if *runOnCom {
-            exec.Command("./output")
+            callCmd("./output")
         }
     default:
         helpCmd.Parse(os.Args[2:])

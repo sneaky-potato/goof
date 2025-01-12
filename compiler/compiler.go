@@ -70,6 +70,10 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
+    if constants.COUNT_OPS != 8 {
+        panic("Exhaustive handling in compilation")
+    }
+
     for ip < len(program) {
         out.WriteString(fmt.Sprintf("addr_%d:\n", ip))
         operation := program[ip]
