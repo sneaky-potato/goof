@@ -1,2 +1,10 @@
-1 2 + dump
-4 3 - dump
+2 1 > if
+    69 dump
+else
+    420 dump
+end
+
+5 while dup 0 > do
+    dup dump
+    1 -
+end

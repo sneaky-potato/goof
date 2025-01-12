@@ -70,7 +70,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 8 {
+    if constants.COUNT_OPS != 26 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -82,32 +82,171 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
         case constants.OP_PUSH:
             out.WriteString(fmt.Sprintf("    ;; -- push %d --\n", operation.Value))
             out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
-            ip += 1
         case constants.OP_PLUS:
             out.WriteString("    ;; -- plus --\n")
             out.WriteString("    pop rax\n")
             out.WriteString("    pop rbx\n")
             out.WriteString("    add rax, rbx\n")
             out.WriteString("    push rax\n")
-            ip += 1
         case constants.OP_MINUS:
             out.WriteString("    ;; -- minus --\n")
             out.WriteString("    pop rax\n")
             out.WriteString("    pop rbx\n")
             out.WriteString("    sub rbx, rax\n")
             out.WriteString("    push rbx\n")
-            ip += 1
         case constants.OP_DUMP:
             out.WriteString("    ;; -- dump --\n")
             out.WriteString("    pop rdi\n")
             out.WriteString("    call dump\n")
-            ip += 1
-        default:
-            ip += 1
+        case constants.OP_EQUAL:
+            out.WriteString("    ;; -- equal --\n")
+            out.WriteString("    mov rcx, 0\n")
+            out.WriteString("    mov rdx, 1\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    cmp rbx, rax\n")
+            out.WriteString("    cmove rcx, rdx\n")
+            out.WriteString("    push rcx\n")
+        case constants.OP_IF:
+            out.WriteString("    ;; -- if --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    test rax, rax\n")
+            if operation.Jump < 0 {
+                panic("`if` instruction does not have reference to end of its block, please use end after if")
+            }
+            out.WriteString(fmt.Sprintf("    jz addr_%d\n", operation.Jump))
+        case constants.OP_ELSE:
+            out.WriteString("    ;; -- else --\n")
+            if operation.Jump < 0 {
+                panic("`else` instruction does not have reference to end of its block, please use end after else")
+            }
+            out.WriteString(fmt.Sprintf("    jmp addr_%d\n", operation.Jump))
+        case constants.OP_END:
+            out.WriteString("    ;; -- end --\n")
+            if operation.Jump < 0 {
+                panic("`end` instruction does not have reference to next instruction")
+            }
+            if ip + 1 != operation.Jump {
+                out.WriteString(fmt.Sprintf("    jmp addr_%d\n", operation.Jump))
+            }
+        case constants.OP_DUP:
+            out.WriteString("    ;; -- dup --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    push rax\n")
+            out.WriteString("    push rax\n")
+        case constants.OP_2DUP:
+            out.WriteString("    ;; -- 2dup --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    push rbx\n")
+            out.WriteString("    push rax\n")
+            out.WriteString("    push rbx\n")
+            out.WriteString("    push rax\n")
+        case constants.OP_DROP:
+            out.WriteString("    ;; -- drop --\n")
+            out.WriteString("    pop rax\n")
+        case constants.OP_OVER:
+            out.WriteString("    ;; -- over --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    push rbx\n")
+            out.WriteString("    push rax\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_SHR:
+            out.WriteString("    ;; -- shr --\n")
+            out.WriteString("    pop rcx\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    shr rbx, cl\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_SHL:
+            out.WriteString("    ;; -- shl --\n")
+            out.WriteString("    pop rcx\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    shl rbx, cl\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_OR:
+            out.WriteString("    ;; -- or --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    or rbx, rax\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_AND:
+            out.WriteString("    ;; -- and --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    and rbx, rax\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_SWAP:
+            out.WriteString("    ;; -- swap --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    push rax\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_ROT:
+            out.WriteString("    ;; -- rot --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    pop rcx\n")
+            out.WriteString("    push rax\n")
+            out.WriteString("    push rcx\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_LT:
+            out.WriteString("    ;; -- lt --\n")
+            out.WriteString("    mov rcx, 0\n")
+            out.WriteString("    mov rdx, 1\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    cmp rax, rbx\n")
+            out.WriteString("    cmovl rcx, rdx\n")
+            out.WriteString("    push rcx\n")
+        case constants.OP_GT:
+            out.WriteString("    ;; -- gt --\n")
+            out.WriteString("    mov rcx, 0\n")
+            out.WriteString("    mov rdx, 1\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    cmp rax, rbx\n")
+            out.WriteString("    cmovg rcx, rdx\n")
+            out.WriteString("    push rcx\n")
+        case constants.OP_WHILE:
+            out.WriteString("    ;; -- while --\n")
+        case constants.OP_DO:
+            out.WriteString("    ;; -- do --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    test rax, rax\n")
+            if operation.Jump < 0 {
+                panic("`do` instruction does not have reference to end of its block, please use end after else")
+            }
+            out.WriteString(fmt.Sprintf("    jz addr_%d\n", operation.Jump))
+        case constants.OP_MEM:
+            out.WriteString("    ;; -- mem --\n")
+            out.WriteString("    push mem\n")
+        case constants.OP_LOAD:
+            out.WriteString("    ;; -- load --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    xor rbx, rbx\n")
+            out.WriteString("    mov bl, [rax]\n")
+            out.WriteString("    push rbx\n")
+        case constants.OP_STORE:
+            out.WriteString("    ;; -- store --\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    mov [rax], bl\n")
+        case constants.OP_SYSCALL3:
+            out.WriteString("    ;; -- syscall --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rdi\n")
+            out.WriteString("    pop rsi\n")
+            out.WriteString("    pop rdx\n")
+            out.WriteString("    syscall\n")
         }
+
+        ip += 1
     }
     out.WriteString(fmt.Sprintf("addr_%d:\n", len(program)))
     out.WriteString("    mov rax, 60\n")
     out.WriteString("    mov rdi, 0\n")
     out.WriteString("    syscall\n")
+    out.WriteString("segment .bss\n")
+    out.WriteString(fmt.Sprintf("mem resb %d\n", constants.MEM_CAPACITY))
 }

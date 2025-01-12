@@ -40,7 +40,6 @@ func usage(program string) {
 func main() {
     simCmd := flag.NewFlagSet("sim", flag.ExitOnError)
     comCmd := flag.NewFlagSet("com", flag.ExitOnError)
-    helpCmd := flag.NewFlagSet("help", flag.ExitOnError)
     runOnCom := comCmd.Bool("r", false, "run")
     
     if len(os.Args) < 2 {
@@ -68,7 +67,6 @@ func main() {
             callCmd("./output")
         }
     default:
-        helpCmd.Parse(os.Args[2:])
         usage(os.Args[0])
     }
 }
