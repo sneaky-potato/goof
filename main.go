@@ -1,12 +1,14 @@
 package main
 
 import (
-    "fmt"
-    "flag"
-    "os"
-    "os/exec"
+	"flag"
+	"fmt"
+    "log"
+	"os"
+	"os/exec"
 
-    "github.com/sneaky-potato/g4th/lexer"
+	"github.com/sneaky-potato/g4th/compiler"
+	"github.com/sneaky-potato/g4th/lexer"
 )
 
 func usage(program string) {
@@ -38,12 +40,26 @@ func main() {
     case "com":
         comCmd.Parse(os.Args[2:])
         filePath := comCmd.Args()[0]
-        _ = lexer.LoadProgramFromFile(filePath)
+        program := lexer.LoadProgramFromFile(filePath)
 
-        // compile_program(program, "output.asm")
+        compiler.CompileToAsm("output.asm", program)
 
-        exec.Command("nasm", "-felf64", "output.asm")
-        exec.Command("ld", "-o", "output")
+        cmd := exec.Command("nasm", "-felf64", "output.asm")
+        _, err := cmd.Output()
+
+        if err != nil {
+            log.Fatal(err)
+            return
+        }
+
+        cmd = exec.Command("ld", "-o", "output", "output.o")
+
+        _, err = cmd.Output()
+
+        if err != nil {
+            log.Fatal(err)
+            return
+        }
 
         if *runOnCom {
             exec.Command("./output")

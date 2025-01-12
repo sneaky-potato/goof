@@ -2,7 +2,7 @@
 
 > I wanted to talk to the computer using my own language
 
-goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language) and implemented in Go
+goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go
 
 ## Usage
 

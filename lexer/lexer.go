@@ -12,8 +12,9 @@ import (
 )
 
 type Operation struct {
-    Op   int
-    Jump int
+    Op    int
+    Value int
+    Jump  int
 }
 
 type Token struct {
@@ -26,7 +27,7 @@ func pushInteger(value string) (Operation, error) {
     var intValue int; var err error
 
     if intValue, err = strconv.Atoi(value); err == nil {
-        return Operation{ constants.OP_PLUS, intValue }, nil
+        return Operation{ constants.OP_PUSH, intValue, -1 }, nil
     }
     return Operation{}, err
 }
@@ -37,19 +38,19 @@ func ParseTokenAsOp(token Token) Operation {
     }
     switch token.Word {
     case "+":
-        return Operation{ constants.OP_PLUS, 0 }
+        return Operation{ constants.OP_PLUS, 0, -1 }
     case "-":
-        return Operation{ constants.OP_MINUS, 0 }
+        return Operation{ constants.OP_MINUS, 0, -1 }
     case "=":
-        return Operation{ constants.OP_EQUAL, 0 }
+        return Operation{ constants.OP_EQUAL, 0, -1 }
     case "if":
-        return Operation{ constants.OP_IF, 0 }
+        return Operation{ constants.OP_IF, 0, -1 }
     case "else":
-        return Operation{ constants.OP_ELSE, 0 }
+        return Operation{ constants.OP_ELSE, 0, -1 }
     case "end":
-        return Operation{ constants.OP_END, 0 }
+        return Operation{ constants.OP_END, 0, -1 }
     case "dump":
-        return Operation{ constants.OP_DUMP, 0 }
+        return Operation{ constants.OP_DUMP, 0, -1 }
     default:
         operation, err := pushInteger(token.Word)
         if err == nil {
