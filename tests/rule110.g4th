@@ -1,0 +1,37 @@
+mem 1  + 1 .
+mem 28 + 1 .
+
+// number of generations
+0 while dup 30 < do
+    0 while dup 30 < do
+        // if (mem[j] == 1)
+        dup mem + , if
+            mem 30 + 42 .
+        else
+            mem 30 + 32 .
+        end
+        1 mem 30 + 1 1 syscall3
+        1 +
+    end
+    // pop the inner loop counter
+    drop
+    mem 30 + 10 .
+    1 mem 30 + 1 1 syscall3
+
+    // pattern
+    mem , 1 shl
+    mem 1 + ,
+    or
+
+    1 while dup 28 < do
+        swap 1 shl 7 and
+        over mem + 1 + , or
+        over over 110 swap shr 1 and
+        swap mem + swap .
+        swap
+        1 +
+    end
+
+    drop drop
+    1 +
+end

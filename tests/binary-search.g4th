@@ -1,0 +1,49 @@
+// mem[0 .. 6] = sorted array of nums
+// mem[7] = key
+
+mem dup 10 . 
+1 + dup 20 .
+1 + dup 30 .
+1 + dup 40 .
+1 + dup 50 .
+1 + dup 60 .
+1 + dup 70 .
+
+1 + dup 60 . // key
+
+0 6 while 2dup 2dup < rot = or do
+    2dup // low high
+    + 1 shr // mid
+    1 - // mid-1
+    dup 2 + // mid-1 mid+1
+    dup 1 - // mid-1 mid+1 mid
+    mem + , // mid-1 mid+1 mem[mid]
+    mem 7 + , // mid-1 mid+1 mem[mid] key
+
+    2dup
+
+    = if
+        drop drop
+        // print Y in case key is found
+        // mem[8] = 'Y'; mem[9] = '\n'
+        mem 8 + 89 .
+        mem 9 + 10 .
+        2 mem 8 + 1 1 syscall3
+        // print mid index
+        1 - dump
+        // exit
+    else
+
+        < if // mid-1 mid+1
+            // update low
+            swap drop // low high mid+1
+            swap // low mid+1 high 
+        else
+            // update high
+            drop // low high mid-1
+            swap drop // low mid-1
+        end
+
+    end
+
+end

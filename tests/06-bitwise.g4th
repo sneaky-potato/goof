@@ -1,0 +1,4 @@
+1 3 shl dump // 1 << 3
+32 3 shr dump // 32 >> 3
+1 2 or dump // 1 || 2
+1 2 and dump // 1 && 2
