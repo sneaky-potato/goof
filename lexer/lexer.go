@@ -98,7 +98,7 @@ func ParseTokenAsOp(token Token) Operation {
 }
 
 
-func crossreference_blocks(program []Operation) []Operation {
+func crossreferenceBlocks(program []Operation) []Operation {
     var stack []int
     var n int = 0
     if constants.COUNT_OPS != 26 {
@@ -167,7 +167,7 @@ func LoadProgramFromFile(filePath string) []Operation {
         text = strings.Split(text, "//")[0]
         words := strings.Fields(text)
         for _, word := range words {
-            operation := ParseTokenAsOp(Token{filePath, row, word})
+            operation := ParseTokenAsOp(Token{ filePath, row, word })
             program = append(program, operation)
         }
         row += 1
@@ -177,7 +177,7 @@ func LoadProgramFromFile(filePath string) []Operation {
         log.Fatal(err)
     }
 
-    program = crossreference_blocks(program)
+    program = crossreferenceBlocks(program)
 
     return program
 }
