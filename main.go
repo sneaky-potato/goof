@@ -62,7 +62,6 @@ func main() {
         callCmd("nasm", "-felf64", "output.asm")
         callCmd("ld", "-o", "output", "output.o")
 
-
         if *runOnCom {
             callCmd("./output")
         }

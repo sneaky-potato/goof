@@ -178,7 +178,6 @@ func LoadProgramFromFile(filePath string) []Operation {
     }
 
     program = crossreference_blocks(program)
-    // fmt.Println(program)
 
     return program
 }
