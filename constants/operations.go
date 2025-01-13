@@ -35,6 +35,7 @@ const (
 
     OP_SYSCALL3
     OP_DUMP
+    OP_INCLUDE
     COUNT_OPS
 )
 
@@ -65,6 +66,7 @@ var BUILTIN_WORDS = map[string]int{
     ".": OP_STORE,
     "syscall3": OP_SYSCALL3,
     "dump": OP_DUMP,
+    "include": OP_INCLUDE,
 }
 
 const MEM_CAPACITY = 640_000

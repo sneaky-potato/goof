@@ -30,7 +30,7 @@ type Token struct {
 }
 
 func ParseTokenAsOp(token Token) Operation {
-    if constants.COUNT_OPS != 28 {
+    if constants.COUNT_OPS != 29 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
     if token.TokenWord.Type == constants.TOKEN_WORD {
@@ -69,7 +69,7 @@ func compileTokenList(tokenList []Token) []Operation {
     var program []Operation
     macros := make(map[Word][]Token)
 
-    if constants.COUNT_OPS != 28 {
+    if constants.COUNT_OPS != 29 {
         panic("Exhaustive handling inside crossreference")
     }
 
@@ -85,6 +85,17 @@ func compileTokenList(tokenList []Token) []Operation {
         }
 
         op := ParseTokenAsOp(token)
+        if op.Op == constants.OP_INCLUDE {
+            if len(tokenList) == 0 {
+                panic(fmt.Sprintf("%s:%d -- expected include file found nothing", token.FilePath, token.Row))
+            }
+            token, tokenList = tokenList[0], tokenList[1:]
+            if token.TokenWord.Type != constants.TOKEN_STR {
+                panic(fmt.Sprintf("%s:%d -- expected include file to be string found %+v", token.FilePath, token.Row, token.TokenWord.Value))
+            }
+            includedOperations := lexFile(token.TokenWord.Value.(string))
+            tokenList = append(includedOperations, tokenList...)
+        }
         if op.Op != constants.OP_MACRO {
             program = append(program, op)
         }
@@ -198,8 +209,7 @@ func splitProgramWithStrings(r rune) bool {
     return !quoted && unicode.IsSpace(r)
 }
 
-func LoadProgramFromFile(filePath string) []Operation {
-    var program []Operation
+func lexFile(filePath string) []Token {
     var tokenList []Token
     file, err := os.Open(filePath)
     if err != nil {
@@ -217,7 +227,6 @@ func LoadProgramFromFile(filePath string) []Operation {
         words := strings.FieldsFunc(text, splitProgramWithStrings)
         for _, word := range words {
             tokenWord := lexWord(word)
-            // operation := ParseTokenAsOp()
             tokenList = append(tokenList, Token{ filePath, row, tokenWord })
         }
         row += 1
@@ -227,7 +236,10 @@ func LoadProgramFromFile(filePath string) []Operation {
         log.Fatal(err)
     }
 
-    program = compileTokenList(tokenList)
-
+    return tokenList
+}
+func LoadProgramFromFile(filePath string) []Operation {
+    tokenList := lexFile(filePath)
+    program := compileTokenList(tokenList)
     return program
 }
