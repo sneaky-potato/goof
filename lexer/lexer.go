@@ -74,18 +74,20 @@ func compileTokenList(tokenList []Token) []Operation {
     }
 
     ip := 0
-    for ip < len(tokenList) {
-        token := tokenList[ip]
-        val, ok := macros[token.TokenWord]
+    var token Token
+    for len(tokenList) > 0 {
+        token, tokenList = tokenList[0], tokenList[1:]
 
+        val, ok := macros[token.TokenWord]
         if ok {
-            tokenList = append(tokenList, val...)
-            ip += 1
+            tokenList = append(val, tokenList...)
             continue
         }
 
         op := ParseTokenAsOp(token)
-        program = append(program, op)
+        if op.Op != constants.OP_MACRO {
+            program = append(program, op)
+        }
         if op.Op == constants.OP_IF {
             stack = append(stack, ip)
             n += 1
@@ -124,8 +126,8 @@ func compileTokenList(tokenList []Token) []Operation {
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_MACRO {
-            ip += 1
-            macroName := tokenList[ip]
+            token, tokenList = tokenList[0], tokenList[1:]
+            var macroName = token
 
             if macroName.TokenWord.Type != constants.TOKEN_WORD {
                 panic(fmt.Sprintf("%s:%d -- expected macro name to be a word but found %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
@@ -141,23 +143,22 @@ func compileTokenList(tokenList []Token) []Operation {
                 panic(fmt.Sprintf("%s:%d -- redefinition of macro %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
             }
 
-            ip += 1
-
             var nextToken Token
-            for ip < len(tokenList) {
-                nextToken = tokenList[ip]
+            for len(tokenList) > 0 {
+                nextToken, tokenList = tokenList[0], tokenList[1:]
                 if nextToken.TokenWord.Type == constants.TOKEN_WORD && nextToken.TokenWord.Value.(string) == "end" {
                     break
                 } else {
                     macros[macroName.TokenWord] = append(macros[macroName.TokenWord], nextToken)
                 }
-                ip += 1
             }
 
             if nextToken.TokenWord.Type != constants.TOKEN_WORD || nextToken.TokenWord.Value.(string) != "end" {
                 panic(fmt.Sprintf("%s:%d -- macro definition incomplete", macroName.FilePath, macroName.Row))
             }
+            ip -= 1
         }
+
         ip += 1
     }
     return program

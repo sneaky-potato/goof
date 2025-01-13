@@ -8,3 +8,15 @@ macro write
 end
 
 "Hello World\n" write
+
+1 2 + 2 dump
+
+"oo lala\n" write
+
+1 2 > if
+    "yes\n" write
+else
+    "no\n" write
+end
+
+"end\n" write

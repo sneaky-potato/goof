@@ -89,6 +89,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
         case constants.OP_PUSH_STR:
             out.WriteString(fmt.Sprintf("    ;; -- push str %s --\n", operation.Value))
             val, _ := operation.Value.(string)
+            val, _ = strconv.Unquote(`"` + val + `"`)
             out.WriteString(fmt.Sprintf("    mov rax, %d\n", len(val)))
             out.WriteString("    push rax\n")
             out.WriteString(fmt.Sprintf("    push str_%d\n", len(strs)))
@@ -262,7 +263,6 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     for idx, s := range(strs) {
         out.WriteString(fmt.Sprintf("str_%d: ", idx))
         out.WriteString("db ")
-        s, _ = strconv.Unquote(`"` + s + `"`)
         bytes := []byte(s)
         var stringHex []string = []string{}
         for _, b := range(bytes) {
