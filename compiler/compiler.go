@@ -260,7 +260,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("    syscall\n")
     out.WriteString("segment .data\n")
     for idx, s := range(strs) {
-        out.WriteString(fmt.Sprintf("str_%d:\n", idx))
+        out.WriteString(fmt.Sprintf("str_%d: ", idx))
         out.WriteString("db ")
         s, _ = strconv.Unquote(`"` + s + `"`)
         bytes := []byte(s)
