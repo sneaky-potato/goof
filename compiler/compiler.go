@@ -79,8 +79,11 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
         operation := program[ip]
 
         switch operation.Op {
-        case constants.OP_PUSH:
-            out.WriteString(fmt.Sprintf("    ;; -- push %d --\n", operation.Value))
+        case constants.OP_PUSH_INT:
+            out.WriteString(fmt.Sprintf("    ;; -- push int %d --\n", operation.Value))
+            out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
+        case constants.OP_PUSH_STR:
+            out.WriteString(fmt.Sprintf("    ;; -- push str %s --\n", operation.Value))
             out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
         case constants.OP_PLUS:
             out.WriteString("    ;; -- plus --\n")

@@ -13,7 +13,7 @@ import (
 
 type Operation struct {
     Op    int
-    Value int
+    Value interface{}
     Jump  int
 }
 
@@ -29,7 +29,7 @@ type Token struct {
 }
 
 func ParseTokenAsOp(token Token) Operation {
-    if constants.COUNT_OPS != 26 {
+    if constants.COUNT_OPS != 27 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
     if token.TokenWord.Type == constants.TOKEN_WORD {
@@ -43,7 +43,15 @@ func ParseTokenAsOp(token Token) Operation {
     } else if token.TokenWord.Type == constants.TOKEN_INT {
         val, ok := token.TokenWord.Value.(int)
         if ok {
-            return Operation{ constants.OP_PUSH, val, -1 }
+            return Operation{ constants.OP_PUSH_INT, val, -1 }
+        } else {
+            errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
+            panic(errorString)
+        }
+    } else if token.TokenWord.Type == constants.TOKEN_STR {
+        val, ok := token.TokenWord.Value.(string)
+        if ok {
+            return Operation{ constants.OP_PUSH_STR, val, -1 }
         } else {
             errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
             panic(errorString)
@@ -57,7 +65,7 @@ func ParseTokenAsOp(token Token) Operation {
 func crossreferenceBlocks(program []Operation) []Operation {
     var stack []int
     var n int = 0
-    if constants.COUNT_OPS != 26 {
+    if constants.COUNT_OPS != 27 {
         panic("Exhaustive handling inside crossreference")
     }
     ip := 0
@@ -133,6 +141,7 @@ func LoadProgramFromFile(filePath string) []Operation {
         words := strings.Fields(text)
         for _, word := range words {
             tokenWord := lexWord(word)
+            // TODO get string value and parse it
             operation := ParseTokenAsOp(Token{ filePath, row, tokenWord })
             program = append(program, operation)
         }

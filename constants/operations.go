@@ -1,7 +1,8 @@
 package constants
 
 const (
-    OP_PUSH = iota
+    OP_PUSH_INT = iota
+    OP_PUSH_STR
     OP_DUMP
     OP_PLUS
     OP_MINUS
