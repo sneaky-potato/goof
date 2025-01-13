@@ -1,9 +1,10 @@
 package compiler
 
 import (
-    "fmt"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/sneaky-potato/g4th/constants"
 	"github.com/sneaky-potato/g4th/lexer"
@@ -15,6 +16,8 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     if err != nil {
         log.Fatal(err)
     }
+
+    var strs []string = []string{}
 
     out.WriteString("segment .text\n")
     out.WriteString("dump:\n")
@@ -84,7 +87,11 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
             out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
         case constants.OP_PUSH_STR:
             out.WriteString(fmt.Sprintf("    ;; -- push str %s --\n", operation.Value))
-            fmt.Println("not implemented")
+            val, _ := operation.Value.(string)
+            out.WriteString(fmt.Sprintf("    mov rax, %d\n", len(val)))
+            out.WriteString("    push rax\n")
+            out.WriteString(fmt.Sprintf("    push str_%d\n", len(strs)))
+            strs = append(strs, val)
         case constants.OP_PLUS:
             out.WriteString("    ;; -- plus --\n")
             out.WriteString("    pop rax\n")
@@ -250,6 +257,19 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("    mov rax, 60\n")
     out.WriteString("    mov rdi, 0\n")
     out.WriteString("    syscall\n")
+    out.WriteString("segment .data\n")
+    for idx, s := range(strs) {
+        out.WriteString(fmt.Sprintf("str_%d:\n", idx))
+        out.WriteString("db ")
+        // TODO: escape backslashes
+        bytes := []byte(s)
+        var stringHex []string = []string{}
+        for _, b := range(bytes) {
+            stringHex = append(stringHex, fmt.Sprintf("0x%x", b))
+        }
+        out.WriteString(strings.Join(stringHex, ","))
+        out.WriteString("\n")
+    }
     out.WriteString("segment .bss\n")
     out.WriteString(fmt.Sprintf("mem resb %d\n", constants.MEM_CAPACITY))
 }

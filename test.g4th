@@ -1,12 +1,6 @@
-2 1 > if
-    69 dump
-else
-    420 dump
-end
-
-5 while dup 0 > do
+10 0 while 2dup > do
     dup dump
-    1 -
+    1 +
 end
 
-
+"Hello World\n" 1 1 syscall3
