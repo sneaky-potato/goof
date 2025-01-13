@@ -60,3 +60,4 @@ var BUILTIN_WORDS = map[string]int{
 }
 
 const MEM_CAPACITY = 640_000
+const STR_CAPACITY = 640_000

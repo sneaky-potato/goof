@@ -1,12 +1,13 @@
 package lexer
 
 import (
+	"bufio"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
-    "bufio"
-    "log"
-    "os"
-    "strings"
+	"strings"
+	"unicode"
 
 	"github.com/sneaky-potato/g4th/constants"
 )
@@ -120,7 +121,32 @@ func lexWord(tokenWord string) Word {
     if intValue, err = strconv.Atoi(tokenWord); err == nil {
         return Word{ constants.TOKEN_INT, intValue }
     }
+    n := len(tokenWord)
+    if n > 1 {
+        first := tokenWord[0]
+        last := tokenWord[n - 1]
+        if first == '"' && last == '"' {
+            return Word{ constants.TOKEN_STR, tokenWord[1:n-1]}
+        }
+    }
     return Word{ constants.TOKEN_WORD, tokenWord }
+}
+
+var quoted bool = false
+var escaped bool = false
+
+func splitProgramWithStrings(r rune) bool {
+    if r == '"' && !escaped {
+        quoted = !quoted
+    }
+
+    if r == '\\' {
+        escaped = true
+    } else {
+        escaped = false
+    }
+
+    return !quoted && unicode.IsSpace(r)
 }
 
 func LoadProgramFromFile(filePath string) []Operation {
@@ -138,10 +164,9 @@ func LoadProgramFromFile(filePath string) []Operation {
     for scanner.Scan() {
         text := scanner.Text()
         text = strings.Split(text, "//")[0]
-        words := strings.Fields(text)
+        words := strings.FieldsFunc(text, splitProgramWithStrings)
         for _, word := range words {
             tokenWord := lexWord(word)
-            // TODO get string value and parse it
             operation := ParseTokenAsOp(Token{ filePath, row, tokenWord })
             program = append(program, operation)
         }

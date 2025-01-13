@@ -70,7 +70,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 26 {
+    if constants.COUNT_OPS != 27 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -84,7 +84,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
             out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
         case constants.OP_PUSH_STR:
             out.WriteString(fmt.Sprintf("    ;; -- push str %s --\n", operation.Value))
-            out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
+            fmt.Println("not implemented")
         case constants.OP_PLUS:
             out.WriteString("    ;; -- plus --\n")
             out.WriteString("    pop rax\n")
