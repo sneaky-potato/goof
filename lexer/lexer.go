@@ -32,64 +32,24 @@ func ParseTokenAsOp(token Token) Operation {
     if constants.COUNT_OPS != 26 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
-    switch token.TokenWord.Value {
-    case "+":
-        return Operation{ constants.OP_PLUS, 0, -1 }
-    case "-":
-        return Operation{ constants.OP_MINUS, 0, -1 }
-    case "=":
-        return Operation{ constants.OP_EQUAL, 0, -1 }
-    case "if":
-        return Operation{ constants.OP_IF, 0, -1 }
-    case "else":
-        return Operation{ constants.OP_ELSE, 0, -1 }
-    case "end":
-        return Operation{ constants.OP_END, 0, -1 }
-    case "dump":
-        return Operation{ constants.OP_DUMP, 0, -1 }
-    case "dup":
-        return Operation{ constants.OP_DUP, 0, -1 }
-    case "2dup":
-        return Operation{ constants.OP_2DUP, 0, -1 }
-    case "swap":
-        return Operation{ constants.OP_SWAP, 0, -1 }
-    case "rot":
-        return Operation{ constants.OP_ROT, 0, -1 }
-    case "drop":
-        return Operation{ constants.OP_DROP, 0, -1 }
-    case "over":
-        return Operation{ constants.OP_OVER, 0, -1 }
-    case "shl":
-        return Operation{ constants.OP_SHL, 0, -1 }
-    case "shr":
-        return Operation{ constants.OP_SHR, 0, -1 }
-    case "or":
-        return Operation{ constants.OP_OR, 0, -1 }
-    case "and":
-        return Operation{ constants.OP_AND, 0, -1 }
-    case "<":
-        return Operation{ constants.OP_LT, 0, -1 }
-    case ">":
-        return Operation{ constants.OP_GT, 0, -1 }
-    case "while":
-        return Operation{ constants.OP_WHILE, 0, -1 }
-    case "do":
-        return Operation{ constants.OP_DO, 0, -1 }
-    case "mem":
-        return Operation{ constants.OP_MEM, 0, -1 }
-    case ",":
-        return Operation{ constants.OP_LOAD, 0, -1 }
-    case ".":
-        return Operation{ constants.OP_STORE, 0, -1 }
-    case "syscall3":
-        return Operation{ constants.OP_SYSCALL3, 0, -1 }
-    default:
-        intValue, converted := token.TokenWord.Value.(int)
-        if converted {
-            return Operation{ constants.OP_PUSH, intValue, -1 }
+    if token.TokenWord.Type == constants.TOKEN_WORD {
+        val, ok := constants.BUILTIN_WORDS[token.TokenWord.Value.(string)]
+        if ok {
+            return Operation{ val, 0, -1 }
+        } else {
+            errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
+            panic(errorString)
         }
-        errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
-		panic(errorString)
+    } else if token.TokenWord.Type == constants.TOKEN_INT {
+        val, ok := token.TokenWord.Value.(int)
+        if ok {
+            return Operation{ constants.OP_PUSH, val, -1 }
+        } else {
+            errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
+            panic(errorString)
+        }
+    } else {
+        panic("Unreachable code")
     }
 }
 
