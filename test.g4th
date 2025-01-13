@@ -3,4 +3,4 @@
     1 +
 end
 
-"Hello World\n" 1 1 syscall3
+"Hello World\n\thaha" 1 1 syscall3

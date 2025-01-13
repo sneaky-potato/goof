@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/sneaky-potato/g4th/constants"
@@ -261,7 +262,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     for idx, s := range(strs) {
         out.WriteString(fmt.Sprintf("str_%d:\n", idx))
         out.WriteString("db ")
-        // TODO: escape backslashes
+        s, _ = strconv.Unquote(`"` + s + `"`)
         bytes := []byte(s)
         var stringHex []string = []string{}
         for _, b := range(bytes) {
