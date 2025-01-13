@@ -17,26 +17,22 @@ type Operation struct {
     Jump  int
 }
 
-type Token struct {
-    FilePath string
-    Row      int
-    Word     string
+type Word struct {
+    Type  int
+    Value interface{}
 }
 
-func pushInteger(value string) (Operation, error) {
-    var intValue int; var err error
-
-    if intValue, err = strconv.Atoi(value); err == nil {
-        return Operation{ constants.OP_PUSH, intValue, -1 }, nil
-    }
-    return Operation{}, err
+type Token struct {
+    FilePath  string
+    Row       int
+    TokenWord Word
 }
 
 func ParseTokenAsOp(token Token) Operation {
     if constants.COUNT_OPS != 26 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
-    switch token.Word {
+    switch token.TokenWord.Value {
     case "+":
         return Operation{ constants.OP_PLUS, 0, -1 }
     case "-":
@@ -88,11 +84,11 @@ func ParseTokenAsOp(token Token) Operation {
     case "syscall3":
         return Operation{ constants.OP_SYSCALL3, 0, -1 }
     default:
-        operation, err := pushInteger(token.Word)
-        if err == nil {
-            return operation
+        intValue, converted := token.TokenWord.Value.(int)
+        if converted {
+            return Operation{ constants.OP_PUSH, intValue, -1 }
         }
-        errorString := fmt.Sprintf("%s:%d: %s", token.FilePath, token.Row, err)
+        errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
 		panic(errorString)
     }
 }
@@ -150,6 +146,15 @@ func crossreferenceBlocks(program []Operation) []Operation {
     return program
 }
 
+func lexWord(tokenWord string) Word {
+    var intValue int; var err error
+
+    if intValue, err = strconv.Atoi(tokenWord); err == nil {
+        return Word{ constants.TOKEN_INT, intValue }
+    }
+    return Word{ constants.TOKEN_WORD, tokenWord }
+}
+
 func LoadProgramFromFile(filePath string) []Operation {
     var program []Operation
     file, err := os.Open(filePath)
@@ -167,7 +172,8 @@ func LoadProgramFromFile(filePath string) []Operation {
         text = strings.Split(text, "//")[0]
         words := strings.Fields(text)
         for _, word := range words {
-            operation := ParseTokenAsOp(Token{ filePath, row, word })
+            tokenWord := lexWord(word)
+            operation := ParseTokenAsOp(Token{ filePath, row, tokenWord })
             program = append(program, operation)
         }
         row += 1
