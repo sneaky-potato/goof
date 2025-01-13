@@ -3,31 +3,38 @@ package constants
 const (
     OP_PUSH_INT = iota
     OP_PUSH_STR
-    OP_DUMP
     OP_PLUS
     OP_MINUS
     OP_EQUAL
+
     OP_IF
     OP_ELSE
     OP_END
+    OP_WHILE
+    OP_DO
+    OP_MACRO
+
     OP_DUP
     OP_2DUP
+    OP_SWAP
     OP_DROP
     OP_OVER
+    OP_ROT
+
     OP_SHR
     OP_SHL
     OP_OR
     OP_AND
-    OP_SWAP
-    OP_ROT
+
     OP_GT
     OP_LT
-    OP_WHILE
-    OP_DO
+
     OP_MEM
     OP_LOAD
     OP_STORE
+
     OP_SYSCALL3
+    OP_DUMP
     COUNT_OPS
 )
 
@@ -38,7 +45,9 @@ var BUILTIN_WORDS = map[string]int{
     "if": OP_IF,
     "else": OP_ELSE,
     "end": OP_END,
-    "dump": OP_DUMP,
+    "while": OP_WHILE,
+    "do": OP_DO,
+    "macro": OP_MACRO,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,
@@ -51,12 +60,11 @@ var BUILTIN_WORDS = map[string]int{
     "and": OP_AND,
     "<": OP_LT,
     ">": OP_GT,
-    "while": OP_WHILE,
-    "do": OP_DO,
     "mem": OP_MEM,
     ",": OP_LOAD,
     ".": OP_STORE,
     "syscall3": OP_SYSCALL3,
+    "dump": OP_DUMP,
 }
 
 const MEM_CAPACITY = 640_000

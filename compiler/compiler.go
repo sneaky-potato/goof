@@ -74,7 +74,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 27 {
+    if constants.COUNT_OPS != 28 {
         panic("Exhaustive handling in compilation")
     }
 

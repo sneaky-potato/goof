@@ -30,7 +30,7 @@ type Token struct {
 }
 
 func ParseTokenAsOp(token Token) Operation {
-    if constants.COUNT_OPS != 27 {
+    if constants.COUNT_OPS != 28 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
     if token.TokenWord.Type == constants.TOKEN_WORD {
@@ -38,7 +38,7 @@ func ParseTokenAsOp(token Token) Operation {
         if ok {
             return Operation{ val, 0, -1 }
         } else {
-            errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
+            errorString := fmt.Sprintf("%s:%d -- undefined token %s", token.FilePath, token.Row, token.TokenWord.Value)
             panic(errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_INT {
@@ -46,7 +46,7 @@ func ParseTokenAsOp(token Token) Operation {
         if ok {
             return Operation{ constants.OP_PUSH_INT, val, -1 }
         } else {
-            errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
+            errorString := fmt.Sprintf("%s:%d -- undefined token %s", token.FilePath, token.Row, token.TokenWord.Value)
             panic(errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_STR {
@@ -54,7 +54,7 @@ func ParseTokenAsOp(token Token) Operation {
         if ok {
             return Operation{ constants.OP_PUSH_STR, val, -1 }
         } else {
-            errorString := fmt.Sprintf("%s:%d:%s -- %s", token.FilePath, token.Row, "undefined token", token.TokenWord.Value)
+            errorString := fmt.Sprintf("%s:%d -- undefined token %s", token.FilePath, token.Row, token.TokenWord.Value)
             panic(errorString)
         }
     } else {
@@ -63,15 +63,29 @@ func ParseTokenAsOp(token Token) Operation {
 }
 
 
-func crossreferenceBlocks(program []Operation) []Operation {
+func compileTokenList(tokenList []Token) []Operation {
     var stack []int
     var n int = 0
-    if constants.COUNT_OPS != 27 {
+    var program []Operation
+    macros := make(map[Word][]Token)
+
+    if constants.COUNT_OPS != 28 {
         panic("Exhaustive handling inside crossreference")
     }
+
     ip := 0
-    for ip < len(program) {
-        op := program[ip]
+    for ip < len(tokenList) {
+        token := tokenList[ip]
+        val, ok := macros[token.TokenWord]
+
+        if ok {
+            tokenList = append(tokenList, val...)
+            ip += 1
+            continue
+        }
+
+        op := ParseTokenAsOp(token)
+        program = append(program, op)
         if op.Op == constants.OP_IF {
             stack = append(stack, ip)
             n += 1
@@ -109,6 +123,40 @@ func crossreferenceBlocks(program []Operation) []Operation {
             program[ip] = Operation{ constants.OP_DO, 0, while_ip }
             stack = append(stack, ip)
             n += 1
+        } else if op.Op == constants.OP_MACRO {
+            ip += 1
+            macroName := tokenList[ip]
+
+            if macroName.TokenWord.Type != constants.TOKEN_WORD {
+                panic(fmt.Sprintf("%s:%d -- expected macro name to be a word but found %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
+            }
+
+            _, ok := constants.BUILTIN_WORDS[macroName.TokenWord.Value.(string)]
+            if ok {
+                panic(fmt.Sprintf("%s:%d -- redefinition of builtin word %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
+            }
+
+            _, ok = macros[macroName.TokenWord]
+            if ok {
+                panic(fmt.Sprintf("%s:%d -- redefinition of macro %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
+            }
+
+            ip += 1
+
+            var nextToken Token
+            for ip < len(tokenList) {
+                nextToken = tokenList[ip]
+                if nextToken.TokenWord.Type == constants.TOKEN_WORD && nextToken.TokenWord.Value.(string) == "end" {
+                    break
+                } else {
+                    macros[macroName.TokenWord] = append(macros[macroName.TokenWord], nextToken)
+                }
+                ip += 1
+            }
+
+            if nextToken.TokenWord.Type != constants.TOKEN_WORD || nextToken.TokenWord.Value.(string) != "end" {
+                panic(fmt.Sprintf("%s:%d -- macro definition incomplete", macroName.FilePath, macroName.Row))
+            }
         }
         ip += 1
     }
@@ -151,6 +199,7 @@ func splitProgramWithStrings(r rune) bool {
 
 func LoadProgramFromFile(filePath string) []Operation {
     var program []Operation
+    var tokenList []Token
     file, err := os.Open(filePath)
     if err != nil {
         log.Fatal(err)
@@ -167,8 +216,8 @@ func LoadProgramFromFile(filePath string) []Operation {
         words := strings.FieldsFunc(text, splitProgramWithStrings)
         for _, word := range words {
             tokenWord := lexWord(word)
-            operation := ParseTokenAsOp(Token{ filePath, row, tokenWord })
-            program = append(program, operation)
+            // operation := ParseTokenAsOp()
+            tokenList = append(tokenList, Token{ filePath, row, tokenWord })
         }
         row += 1
     }
@@ -177,7 +226,7 @@ func LoadProgramFromFile(filePath string) []Operation {
         log.Fatal(err)
     }
 
-    program = crossreferenceBlocks(program)
+    program = compileTokenList(tokenList)
 
     return program
 }
