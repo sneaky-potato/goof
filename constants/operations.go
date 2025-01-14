@@ -47,7 +47,7 @@ var BUILTIN_WORDS = map[string]int{
     "+": OP_PLUS,
     "-": OP_MINUS,
     "*": OP_MUL,
-    "mod": OP_MOD,
+    "divmod": OP_MOD,
     "=": OP_EQ,
     "!=": OP_NE,
     "if": OP_IF,

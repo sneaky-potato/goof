@@ -118,6 +118,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
             out.WriteString("    pop rbx\n")
             out.WriteString("    pop rax\n")
             out.WriteString("    div rbx\n")
+            out.WriteString("    push rax\n")
             out.WriteString("    push rdx\n")
         case constants.OP_DUMP:
             out.WriteString("    ;; -- dump --\n")
