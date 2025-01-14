@@ -57,6 +57,15 @@ func ParseTokenAsOp(token Token) Operation {
             errorString := fmt.Sprintf("%s:%d -- undefined token %s", token.FilePath, token.Row, token.TokenWord.Value)
             panic(errorString)
         }
+    } else if token.TokenWord.Type == constants.TOKEN_CHAR {
+        val, ok := token.TokenWord.Value.(string)
+        valByte := []byte(val)[0]
+        if ok {
+            return Operation{ constants.OP_PUSH_INT, valByte, -1 }
+        } else {
+            errorString := fmt.Sprintf("%s:%d -- undefined token %s", token.FilePath, token.Row, token.TokenWord.Value)
+            panic(errorString)
+        }
     } else {
         panic("Unreachable code")
     }
@@ -188,6 +197,10 @@ func lexWord(tokenWord string) Word {
         if first == '"' && last == '"' {
             return Word{ constants.TOKEN_STR, tokenWord[1:n-1]}
         }
+
+        if first == '\'' && last == '\'' {
+            return Word{ constants.TOKEN_CHAR, tokenWord[1:n-1]}
+        }
     }
     return Word{ constants.TOKEN_WORD, tokenWord }
 }
@@ -196,7 +209,7 @@ var quoted bool = false
 var escaped bool = false
 
 func splitProgramWithStrings(r rune) bool {
-    if r == '"' && !escaped {
+    if (r == '"' || r == '\'') && !escaped {
         quoted = !quoted
     }
 
@@ -235,6 +248,8 @@ func lexFile(filePath string) []Token {
     if err := scanner.Err(); err != nil {
         log.Fatal(err)
     }
+
+    // fmt.Println(tokenList)
 
     return tokenList
 }

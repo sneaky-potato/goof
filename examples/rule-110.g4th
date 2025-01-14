@@ -8,9 +8,9 @@ mem N 2 - + 1 .
     0 while dup N 2 - < do
         // if (mem[j] == 1)
         dup mem + , if
-            mem N + 42 .
+            mem N + '#' .
         else
-            mem N + 32 .
+            mem N + ' ' .
         end
         1 mem N + write
         1 +
