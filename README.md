@@ -2,7 +2,17 @@
 
 > I wanted to talk to the computer using my own language
 
-goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go
+goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go.
+
+I made this contraption to learn more about compilers and computer architecture.
+I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
+
+## Idea
+
+I always wanted a self hosted compiler for my own language. The big picture is to build a simple computer catered for the langauge.
+The idea for this project stemmed from [Crafting Interpreters](https://www.craftinginterpreters.com/). but I believe the book spoon feeds the concepts and at the end you have an emulator program for running your language and not a native program that you can call independent. Hence bootstrapping through this route would have been very difficult.
+Majority of the project has been inspired from [tsoding](https://www.youtube.com/@TsodingDaily) and his [porth](https://www.youtube.com/playlist?list=PLpM-Dvs8t0VbMZA7wW9aR3EtBqe2kinu4) series which is a language like Forth but in python. I decided to write this in go for various reasons I find meaningful.
+
 
 ## Usage
 
@@ -21,7 +31,10 @@ go run main.go com ./test.porth
 - [x] Compiled
 - [x] Native
 - [x] Turing complete
-- [ ] Add support for defining and calling functions
+- [ ] Expand macros having blocks and `end` statements
+- [ ] Fix recursive macros
+- [ ] Include directories and add support for finding included files
+- [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 - [ ] Achieve bootstrapped compiler
 
