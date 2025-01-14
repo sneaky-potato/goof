@@ -74,7 +74,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 29 {
+    if constants.COUNT_OPS != 32 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -106,11 +106,24 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
             out.WriteString("    pop rbx\n")
             out.WriteString("    sub rbx, rax\n")
             out.WriteString("    push rbx\n")
+        case constants.OP_MUL:
+            out.WriteString("    ;; -- mul --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    mul rbx\n")
+            out.WriteString("    push rax\n")
+        case constants.OP_MOD:
+            out.WriteString("    ;; -- mod --\n")
+            out.WriteString("    xor rdx, rdx\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    div rbx\n")
+            out.WriteString("    push rdx\n")
         case constants.OP_DUMP:
             out.WriteString("    ;; -- dump --\n")
             out.WriteString("    pop rdi\n")
             out.WriteString("    call dump\n")
-        case constants.OP_EQUAL:
+        case constants.OP_EQ:
             out.WriteString("    ;; -- equal --\n")
             out.WriteString("    mov rcx, 0\n")
             out.WriteString("    mov rdx, 1\n")
@@ -119,6 +132,15 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
             out.WriteString("    cmp rbx, rax\n")
             out.WriteString("    cmove rcx, rdx\n")
             out.WriteString("    push rcx\n")
+        case constants.OP_NE:
+            out.WriteString("    ;; -- not equal --\n")
+            out.WriteString("    mov rcx, 0\n")
+            out.WriteString("    mov rdx, 1\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    cmp rbx, rax\n")
+            out.WriteString("    cmove rdx, rcx\n")
+            out.WriteString("    push rdx\n")
         case constants.OP_IF:
             out.WriteString("    ;; -- if --\n")
             out.WriteString("    pop rax\n")

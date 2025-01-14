@@ -30,7 +30,7 @@ type Token struct {
 }
 
 func ParseTokenAsOp(token Token) Operation {
-    if constants.COUNT_OPS != 29 {
+    if constants.COUNT_OPS != 32 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
     if token.TokenWord.Type == constants.TOKEN_WORD {
@@ -69,7 +69,7 @@ func compileTokenList(tokenList []Token) []Operation {
     var program []Operation
     macros := make(map[Word][]Token)
 
-    if constants.COUNT_OPS != 29 {
+    if constants.COUNT_OPS != 32 {
         panic("Exhaustive handling inside crossreference")
     }
 

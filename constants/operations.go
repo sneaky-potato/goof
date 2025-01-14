@@ -3,9 +3,16 @@ package constants
 const (
     OP_PUSH_INT = iota
     OP_PUSH_STR
+
     OP_PLUS
     OP_MINUS
-    OP_EQUAL
+    OP_MUL
+    OP_MOD
+
+    OP_EQ
+    OP_NE
+    OP_GT
+    OP_LT
 
     OP_IF
     OP_ELSE
@@ -26,9 +33,6 @@ const (
     OP_OR
     OP_AND
 
-    OP_GT
-    OP_LT
-
     OP_MEM
     OP_LOAD
     OP_STORE
@@ -42,7 +46,10 @@ const (
 var BUILTIN_WORDS = map[string]int{
     "+": OP_PLUS,
     "-": OP_MINUS,
-    "=": OP_EQUAL,
+    "*": OP_MUL,
+    "mod": OP_MOD,
+    "=": OP_EQ,
+    "!=": OP_NE,
     "if": OP_IF,
     "else": OP_ELSE,
     "end": OP_END,
