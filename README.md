@@ -10,7 +10,7 @@ I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` fo
 ## Idea
 
 I always wanted a self hosted compiler for my own language. The big picture is to build a simple computer catered for the langauge.
-The idea for this project stemmed from [Crafting Interpreters](https://www.craftinginterpreters.com/). but I believe the book spoon feeds the concepts and at the end you have an emulator program for running your language and not a native program that you can call independent. Hence bootstrapping through this route would have been very difficult.
+The idea for this project stemmed from [Crafting Interpreters](https://www.craftinginterpreters.com/). But I believe the book spoon feeds the concepts and at the end you have an emulator program for running your language and not a native program that you can call independent. Hence bootstrapping through this route would have been very difficult.
 Majority of the project has been inspired from [tsoding](https://www.youtube.com/@TsodingDaily) and his [porth](https://www.youtube.com/playlist?list=PLpM-Dvs8t0VbMZA7wW9aR3EtBqe2kinu4) series which is a language like Forth but in python. I decided to write this in go for various reasons I find meaningful.
 
 
