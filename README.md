@@ -75,36 +75,60 @@ When the compiler encounters a string the following happens:
 
 | Name    | Signature        | Description                                                                                  |
 | ---     | ---              | ---                                                                                          |
-| `dup`   | `a -- a a`       | duplicate an element on top of the stack.                                                    |
-| `swap`  | `a b -- b a`     | swap 2 elements on the top of the stack.                                                     |
-| `drop`  | `a b -- a`       | drops the top element of the stack.                                                          |
-| `dump`  | `a b -- a`       | print the element on top of the stack in a free form to stdout and remove it from the stack. |
+| `dup`   | `a -- a a`       | duplicate an element on top of the stack                                                    |
+| `swap`  | `a b -- b a`     | swap 2 elements on the top of the stack                                                     |
+| `drop`  | `a b -- a`       | drops the top element of the stack                                                          |
+| `dump`  | `a b -- a`       | print the element on top of the stack in a free form to stdout and remove it from the stack |
 | `over`  | `a b -- a b a`   | copy the element below the top of the stack                                                  |
-| `rot`   | `a b c -- b c a` | rotate the top three stack elements.                                                         |
+| `rot`   | `a b c -- b c a` | rotate the top three stack elements                                                         |
 
 #### Comparison
 
 | Name | Signature                              | Description                                                  |
 | ---  | ---                                    | ---                                                          |
-| `= ` | `[a: int] [b: int] -- [a == b : bool]` | checks if two elements on top of the stack are equal.        |
-| `> ` | `[a: int] [b: int] -- [a > b  : bool]` | applies the greater comparison on top two elements.          |
-| `< ` | `[a: int] [b: int] -- [a < b  : bool]` | applies the less comparison on top two elements.             |
+| `=` | `[a: int] [b: int] -- [a == b : bool]` | checks if two elements on top of the stack are equal        |
+| `!=` | `[a: int] [b: int] -- [a != b : bool]` | checks if two elements on top of the stack are unequal        |
+| `>` | `[a: int] [b: int] -- [a > b  : bool]` | applies the greater comparison on top two elements          |
+| `<` | `[a: int] [b: int] -- [a < b  : bool]` | applies the less comparison on top two elements             |
 
 #### Arithmetic
 
 | Name     | Signature                                        | Description                                                                                                              |
 | ---      | ---                                              | ---                                                                                                                      |
-| `+`      | `[a: int] [b: int] -- [a + b: int]`              | sums up two elements on the top of the stack.                                                                            |
+| `+`      | `[a: int] [b: int] -- [a + b: int]`              | sums up two elements on the top of the stack                                                                            |
 | `-`      | `[a: int] [b: int] -- [a - b: int]`              | subtracts two elements on the top of the stack                                                                           |
+| `*`      | `[a: int] [b: int] -- [a * b: int]`              | multiplies two elements on the top of the stack                                                                           |
+| `divmod`      | `[a: int] [b: int] -- [a / b: int] [a % b: int]`| divides two elements on the top of the stack, pushes quotient and remainder                                                                           |
 
 #### Bitwise
 
 | Name  | Signature                            | Description                   |
 | ---   | ---                                  | ---                           |
-| `shr` | `[a: int] [b: int] -- [a >> b: int]` | right **unsigned** bit shift. |
-| `shl` | `[a: int] [b: int] -- [a << b: int]` | light bit shift.              |
-| `or`  | `[a: int] [b: int] -- [a \| b: int]` | bit `or`.                     |
-| `and` | `[a: int] [b: int] -- [a & b: int]`  | bit `and`.                    |
+| `shr` | `[a: int] [b: int] -- [a >> b: int]` | right **unsigned** bit shift |
+| `shl` | `[a: int] [b: int] -- [a << b: int]` | left bit shift              |
+| `or`  | `[a: int] [b: int] -- [a \| b: int]` | bit `or`                     |
+| `and` | `[a: int] [b: int] -- [a & b: int]`  | bit `and`                    |
+
+#### Memory
+
+- `mem` - pushes the memory address on the stack
+```pascal
+push(mem)
+```
+
+- `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
+```pascal
+mem = pop()
+value = get_value_at_address(mem)
+push(value)
+```
+
+- `.` - **store**: pops the value from stack, pops memory address from stack and stores the value at that address
+```pascal
+value = pop()
+mem = pop()
+set_value_at_address(mem, value)
+```
 
 #### System
 
@@ -118,3 +142,5 @@ for i in range(n):
     <move arg to i-th register according to the call convention>
 <perform the syscall>
 ```
+
+- `include` - includes the tokens from a g4th file into the current file.
