@@ -138,6 +138,9 @@ func compileTokenList(tokenList []Token) []Operation {
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_ELSE {
+            if n == 0 {
+                terminateWithError(token.FilePath, token.Row, "`else` can only be used after `if`")
+            }
             if_ip := stack[n - 1]
             stack = stack[:n - 1]
             n -= 1
@@ -149,6 +152,9 @@ func compileTokenList(tokenList []Token) []Operation {
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_END {
+            if n == 0 {
+                terminateWithError(token.FilePath, token.Row, "`end` can only be used after `if` `else` `do`")
+            }
             block_ip := stack[n - 1]
             stack = stack[:n - 1]
             n -= 1
@@ -165,9 +171,17 @@ func compileTokenList(tokenList []Token) []Operation {
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_DO {
+            if n == 0 {
+                terminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
+            }
             while_ip := stack[n - 1]
             stack = stack[:n - 1]
             n -= 1
+
+            if program[while_ip].Op != constants.OP_WHILE {
+                terminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
+            }
+
             program[ip] = Operation{ constants.OP_DO, 0, while_ip }
             stack = append(stack, ip)
             n += 1
@@ -200,13 +214,25 @@ func compileTokenList(tokenList []Token) []Operation {
                 terminateWithError(token.FilePath, token.Row, errorString)
             }
 
+            macroStack := 1
+
             for len(tokenList) > 0 {
                 nextToken, tokenList = tokenList[0], tokenList[1:]
-                if nextToken.TokenWord.Type == constants.TOKEN_WORD && nextToken.TokenWord.Value.(string) == "end" {
-                    break
-                } else {
-                    macros[macroName.TokenWord.Value.(string)] = append(macros[macroName.TokenWord.Value.(string)], nextToken)
+
+                if nextToken.TokenWord.Type == constants.TOKEN_WORD {
+                    nextTokenString := nextToken.TokenWord.Value.(string)
+                    if nextTokenString == "if" || nextTokenString == "while" {
+                        macroStack += 1
+                    } else if nextTokenString == "end" {
+                        macroStack -= 1
+                    }
                 }
+
+                if macroStack == 0 {
+                    break
+                }
+
+                macros[macroName.TokenWord.Value.(string)] = append(macros[macroName.TokenWord.Value.(string)], nextToken)
             }
 
             if nextToken.TokenWord.Type != constants.TOKEN_WORD || nextToken.TokenWord.Value.(string) != "end" {
