@@ -73,8 +73,11 @@ func ParseTokenAsOp(token Token) Operation {
 }
 
 func expandMacro(macroTokens []Token, expanded int) []Token {
+    if expanded >= 35 {
+        panic("Reached recursion limit")
+    }
     for i := range macroTokens {
-        macroTokens[i].TokenWord.Expanded = expanded + 1
+        macroTokens[i].TokenWord.Expanded = expanded
     }
     return macroTokens
 }
@@ -84,7 +87,7 @@ func compileTokenList(tokenList []Token) []Operation {
     var stack []int
     var n int = 0
     var program []Operation
-    macros := make(map[Word][]Token)
+    macros := make(map[string][]Token)
 
     if constants.COUNT_OPS != 32 {
         panic("Exhaustive handling inside crossreference")
@@ -93,15 +96,13 @@ func compileTokenList(tokenList []Token) []Operation {
     ip := 0
     var token Token
     for len(tokenList) > 0 {
-        // fmt.Println(macros)
         token, tokenList = tokenList[0], tokenList[1:]
 
-        val, ok := macros[token.TokenWord]
-        if ok {
-            fmt.Println(tokenList)
-            tokenList = append(expandMacro(val, token.TokenWord.Expanded), tokenList...)
-            fmt.Println(tokenList)
-            continue
+        if token.TokenWord.Type == constants.TOKEN_WORD {
+            if val, ok := macros[token.TokenWord.Value.(string)]; ok {
+                tokenList = append(expandMacro(val, token.TokenWord.Expanded + 1), tokenList...)
+                continue
+            }
         }
 
         op := ParseTokenAsOp(token)
@@ -113,7 +114,7 @@ func compileTokenList(tokenList []Token) []Operation {
             if token.TokenWord.Type != constants.TOKEN_STR {
                 panic(fmt.Sprintf("%s:%d -- expected include file to be string found %+v", token.FilePath, token.Row, token.TokenWord.Value))
             }
-            includedOperations := lexFile(token.TokenWord.Value.(string))
+            includedOperations := lexFile(token.TokenWord.Value.(string), token.TokenWord.Expanded + 1)
             tokenList = append(includedOperations, tokenList...)
         }
         if op.Op != constants.OP_MACRO {
@@ -169,7 +170,7 @@ func compileTokenList(tokenList []Token) []Operation {
                 panic(fmt.Sprintf("%s:%d -- redefinition of builtin word %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
             }
 
-            _, ok = macros[macroName.TokenWord]
+            _, ok = macros[macroName.TokenWord.Value.(string)]
             if ok {
                 panic(fmt.Sprintf("%s:%d -- redefinition of macro %+v", macroName.FilePath, macroName.Row, macroName.TokenWord.Value))
             }
@@ -180,7 +181,7 @@ func compileTokenList(tokenList []Token) []Operation {
                 if nextToken.TokenWord.Type == constants.TOKEN_WORD && nextToken.TokenWord.Value.(string) == "end" {
                     break
                 } else {
-                    macros[macroName.TokenWord] = append(macros[macroName.TokenWord], nextToken)
+                    macros[macroName.TokenWord.Value.(string)] = append(macros[macroName.TokenWord.Value.(string)], nextToken)
                 }
             }
 
@@ -233,7 +234,10 @@ func splitProgramWithStrings(r rune) bool {
     return !quoted && unicode.IsSpace(r)
 }
 
-func lexFile(filePath string) []Token {
+func lexFile(filePath string, expanded int) []Token {
+    if expanded >= 35 {
+        panic("Reached recursion limit")
+    }
     var tokenList []Token
     file, err := os.Open(filePath)
     if err != nil {
@@ -251,6 +255,7 @@ func lexFile(filePath string) []Token {
         words := strings.FieldsFunc(text, splitProgramWithStrings)
         for _, word := range words {
             tokenWord := lexWord(word)
+            tokenWord.Expanded = expanded
             tokenList = append(tokenList, Token{ filePath, row, tokenWord })
         }
         row += 1
@@ -260,12 +265,10 @@ func lexFile(filePath string) []Token {
         log.Fatal(err)
     }
 
-    // fmt.Println(tokenList)
-
     return tokenList
 }
 func LoadProgramFromFile(filePath string) []Operation {
-    tokenList := lexFile(filePath)
+    tokenList := lexFile(filePath, 0)
     program := compileTokenList(tokenList)
     return program
 }
