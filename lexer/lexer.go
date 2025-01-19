@@ -73,9 +73,6 @@ func ParseTokenAsOp(token Token) Operation {
 }
 
 func expandMacro(macroTokens []Token, expanded int) []Token {
-    if expanded >= 35 {
-        panic("Reached recursion limit")
-    }
     for i := range macroTokens {
         macroTokens[i].TokenWord.Expanded = expanded
     }
@@ -100,6 +97,11 @@ func compileTokenList(tokenList []Token) []Operation {
 
         if token.TokenWord.Type == constants.TOKEN_WORD {
             if val, ok := macros[token.TokenWord.Value.(string)]; ok {
+
+                if token.TokenWord.Expanded >= 35 {
+                    panic("Reached recursion limit")
+                }
+
                 tokenList = append(expandMacro(val, token.TokenWord.Expanded + 1), tokenList...)
                 continue
             }
@@ -113,6 +115,9 @@ func compileTokenList(tokenList []Token) []Operation {
             token, tokenList = tokenList[0], tokenList[1:]
             if token.TokenWord.Type != constants.TOKEN_STR {
                 panic(fmt.Sprintf("%s:%d -- expected include file to be string found %+v", token.FilePath, token.Row, token.TokenWord.Value))
+            }
+            if token.TokenWord.Expanded >= 35 {
+                panic("Reached recursion limit")
             }
             includedOperations := lexFile(token.TokenWord.Value.(string), token.TokenWord.Expanded + 1)
             tokenList = append(includedOperations, tokenList...)
@@ -235,9 +240,6 @@ func splitProgramWithStrings(r rune) bool {
 }
 
 func lexFile(filePath string, expanded int) []Token {
-    if expanded >= 35 {
-        panic("Reached recursion limit")
-    }
     var tokenList []Token
     file, err := os.Open(filePath)
     if err != nil {
