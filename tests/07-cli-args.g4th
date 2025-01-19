@@ -1,2 +1,10 @@
-drop
-100 swap 1 1 syscall3
+include "std.g4th"
+
+// prints the command line arguments
+while dup 0 > do
+    swap dup strlen swap
+    stdout write
+    "\n" stdout write
+    1 -
+end
+

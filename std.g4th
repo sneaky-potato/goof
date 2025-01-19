@@ -2,8 +2,11 @@ macro stdin  0 end
 macro stdout 1 end
 macro stderr 2 end
 
-macro write 1 stdout syscall3 end
-macro read 1 stdin syscall3 end
+macro SYS_READ 0 end
+macro SYS_WRITE 1 end
+
+macro write SYS_WRITE syscall3 end
+macro read SYS_READ syscall3 end
 
 macro / divmod drop end
 macro % divmod swap drop end
@@ -31,4 +34,12 @@ macro store64
     2dup 255 and . 8 shr swap 1 + swap
     2dup 255 and . 8 shr swap 1 + swap
     2dup 255 and . 8 shr swap drop drop
+end
+
+// ptr -> strlen(ptr)
+macro strlen
+    0 swap while dup , 0 != do
+       1 + swap 1 + swap
+    end
+    drop
 end
