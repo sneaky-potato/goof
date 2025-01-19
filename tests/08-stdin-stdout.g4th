@@ -1,0 +1,10 @@
+include "std.g4th"
+
+macro BUFFER_CAP 256 end
+
+"What is your name?\n" stdout write
+BUFFER_CAP mem stdin read
+"Hello " stdout write
+mem strlen mem stdout write
+"(._.)\n" stdout write
+
