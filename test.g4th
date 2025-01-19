@@ -1,23 +1,11 @@
-// include "std.g4th"
+include "std.g4th"
 
-macro stdout 1 end
-macro write 1 stdout syscall3 end
-
-10 0 while 2dup > do
-    dup dump
-    1 +
+macro loop
+    4 0 while 2dup > do
+        dup dump
+        1 +
+    end
 end
 
-"Hello World\n" write
+loop
 
-1 2 + 2 dump
-
-"oo lala\n" write
-
-1 2 > if
-    "yes\n" write
-else
-    "no\n" write
-end
-
-"end\n" write

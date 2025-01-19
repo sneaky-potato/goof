@@ -31,8 +31,6 @@ go run main.go com ./test.porth
 - [x] Compiled
 - [x] Native
 - [x] Turing complete
-- [ ] Expand macros having blocks and `end` statements
-- [ ] Fix recursive macros
 - [ ] Include directories and add support for finding included files
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
