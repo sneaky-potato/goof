@@ -19,8 +19,9 @@ type Operation struct {
 }
 
 type Word struct {
-    Type  int
-    Value interface{}
+    Type     int
+    Value    interface{}
+    Expanded int
 }
 
 type Token struct {
@@ -71,6 +72,13 @@ func ParseTokenAsOp(token Token) Operation {
     }
 }
 
+func expandMacro(macroTokens []Token, expanded int) []Token {
+    for i := range macroTokens {
+        macroTokens[i].TokenWord.Expanded = expanded + 1
+    }
+    return macroTokens
+}
+
 
 func compileTokenList(tokenList []Token) []Operation {
     var stack []int
@@ -85,11 +93,14 @@ func compileTokenList(tokenList []Token) []Operation {
     ip := 0
     var token Token
     for len(tokenList) > 0 {
+        // fmt.Println(macros)
         token, tokenList = tokenList[0], tokenList[1:]
 
         val, ok := macros[token.TokenWord]
         if ok {
-            tokenList = append(val, tokenList...)
+            fmt.Println(tokenList)
+            tokenList = append(expandMacro(val, token.TokenWord.Expanded), tokenList...)
+            fmt.Println(tokenList)
             continue
         }
 
@@ -188,21 +199,21 @@ func lexWord(tokenWord string) Word {
     var intValue int; var err error
 
     if intValue, err = strconv.Atoi(tokenWord); err == nil {
-        return Word{ constants.TOKEN_INT, intValue }
+        return Word{ constants.TOKEN_INT, intValue, 0 }
     }
     n := len(tokenWord)
     if n > 1 {
         first := tokenWord[0]
         last := tokenWord[n - 1]
         if first == '"' && last == '"' {
-            return Word{ constants.TOKEN_STR, tokenWord[1:n-1]}
+            return Word{ constants.TOKEN_STR, tokenWord[1:n-1], 0 }
         }
 
         if first == '\'' && last == '\'' {
-            return Word{ constants.TOKEN_CHAR, tokenWord[1:n-1]}
+            return Word{ constants.TOKEN_CHAR, tokenWord[1:n-1], 0 }
         }
     }
-    return Word{ constants.TOKEN_WORD, tokenWord }
+    return Word{ constants.TOKEN_WORD, tokenWord, 0 }
 }
 
 var quoted bool = false

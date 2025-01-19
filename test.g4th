@@ -1,4 +1,7 @@
-include "std.g4th"
+// include "std.g4th"
+
+macro stdout 1 end
+macro write 1 stdout syscall3 end
 
 10 0 while 2dup > do
     dup dump
