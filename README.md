@@ -15,7 +15,7 @@ Majority of the project has been inspired from [tsoding](https://www.youtube.com
 
 ## Usage
 
-You would require the following for getting compiling the language and running the programs:
+You would require the following for compiling the language to a 64 bit ELF executable file.
 - [go](https://go.dev/)
 - [nasm](https://nasm.us/): Netwide Assembler is being used to generate the object file for `x86_64` architecture after translating the language to assembly.
 - [ld](https://linux.die.net/man/1/ld): For linking the generated object file to final ELF executable.
@@ -33,15 +33,24 @@ go run main.go com ./test.porth
 ./output
 ```
 
+The compiled binary can be verified using `file` and `ldd` commands.
+```shell
+$ file output
+output: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
+
+$ ldd output
+	not a dynamic executable
+```
+
 ## TODOs
 - [x] Compiled
 - [x] Native
 - [x] Turing complete
 - [ ] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [ ] Include directories and add support for finding included files
+- [ ] Self-hosted compiler
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
-- [ ] Achieve bootstrapped compiler
 
 ## Language Reference
 
