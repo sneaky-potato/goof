@@ -13,15 +13,21 @@ I always wanted a self hosted compiler for my own language. The big picture is t
 The idea for this project stemmed from [Crafting Interpreters](https://www.craftinginterpreters.com/). But I believe the book spoon feeds the concepts and at the end you have an emulator program for running your language and not a native program that you can call independent. Hence bootstrapping through this route would have been very difficult.
 Majority of the project has been inspired from [tsoding](https://www.youtube.com/@TsodingDaily) and his [porth](https://www.youtube.com/playlist?list=PLpM-Dvs8t0VbMZA7wW9aR3EtBqe2kinu4) series which is a language like Forth but in python. I decided to write this in go for various reasons I find meaningful.
 
-
 ## Usage
 
-For simulating the program written in test.g4th
-```shell
-go run main.go sim ./test.g4th
+You would require the following for getting compiling the language and running the programs:
+- [go](https://go.dev/)
+- [nasm](https://nasm.us/): Netwide Assembler is being used to generate the object file for `x86_64` architecture after translating the language to assembly.
+- [ld](https://linux.die.net/man/1/ld): For linking the generated object file to final ELF executable.
+
+The following flowchart summarizes the workflow
+
+```mermaid
+flowchart LR
+    A[test.g4th]-- main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
 ```
 
-For compiling the program written in test.g4th and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
+For compiling the program written in `test.g4th` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
 ```shell
 go run main.go com ./test.porth
 ./output
@@ -31,6 +37,7 @@ go run main.go com ./test.porth
 - [x] Compiled
 - [x] Native
 - [x] Turing complete
+- [ ] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [ ] Include directories and add support for finding included files
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
