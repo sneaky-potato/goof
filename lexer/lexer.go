@@ -10,12 +10,15 @@ import (
 	"unicode"
 
 	"github.com/sneaky-potato/g4th/constants"
+	"github.com/sneaky-potato/g4th/util"
 )
 
 type Operation struct {
     Op    int
     Value interface{}
     Jump  int
+    FilePath  string
+    Row       int
 }
 
 type Word struct {
@@ -30,12 +33,6 @@ type Token struct {
     TokenWord Word
 }
 
-func terminateWithError(filePath string, row int, err string) {
-    errorString := fmt.Sprintf("%s:%d -- %s\n", filePath, row, err)
-    fmt.Fprintf(os.Stderr, errorString)
-    os.Exit(1)
-}
-
 func ParseTokenAsOp(token Token) Operation {
     if constants.COUNT_OPS != 32 {
         panic("Exhaustive handling in parseTokenAsOp")
@@ -44,35 +41,35 @@ func ParseTokenAsOp(token Token) Operation {
     if token.TokenWord.Type == constants.TOKEN_WORD {
         val, ok := constants.BUILTIN_WORDS[token.TokenWord.Value.(string)]
         if ok {
-            return Operation{ val, 0, -1 }
+            return Operation{ val, 0, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
-            terminateWithError(token.FilePath, token.Row, errorString)
+            util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_INT {
         val, ok := token.TokenWord.Value.(int)
         if ok {
-            return Operation{ constants.OP_PUSH_INT, val, -1 }
+            return Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
-            terminateWithError(token.FilePath, token.Row, errorString)
+            util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_STR {
         val, ok := token.TokenWord.Value.(string)
         if ok {
-            return Operation{ constants.OP_PUSH_STR, val, -1 }
+            return Operation{ constants.OP_PUSH_STR, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
-            terminateWithError(token.FilePath, token.Row, errorString)
+            util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_CHAR {
         val, ok := token.TokenWord.Value.(string)
         valByte := []byte(val)[0]
         if ok {
-            return Operation{ constants.OP_PUSH_INT, valByte, -1 }
+            return Operation{ constants.OP_PUSH_INT, valByte, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
-            terminateWithError(token.FilePath, token.Row, errorString)
+            util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     }
     panic("Unreachable code")
@@ -106,7 +103,7 @@ func compileTokenList(tokenList []Token) []Operation {
 
                 if token.TokenWord.Expanded >= 35 {
                     errorString := fmt.Sprintf("Reached recursion limit %s", token.TokenWord.Value)
-                    terminateWithError(token.FilePath, token.Row, errorString)
+                    util.TerminateWithError(token.FilePath, token.Row, errorString)
                 }
 
                 tokenList = append(expandMacro(val, token.TokenWord.Expanded + 1), tokenList...)
@@ -117,16 +114,16 @@ func compileTokenList(tokenList []Token) []Operation {
         op := ParseTokenAsOp(token)
         if op.Op == constants.OP_INCLUDE {
             if len(tokenList) == 0 {
-                terminateWithError(token.FilePath, token.Row, "expected include file found nothing")
+                util.TerminateWithError(token.FilePath, token.Row, "expected include file, found nothing")
             }
             token, tokenList = tokenList[0], tokenList[1:]
             if token.TokenWord.Type != constants.TOKEN_STR {
-                    errorString := fmt.Sprintf("expected include file to be string found %+v", token.TokenWord.Value)
-                    terminateWithError(token.FilePath, token.Row, errorString)
+                errorString := fmt.Sprintf("expected include file to be string, found %+v", token.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
             if token.TokenWord.Expanded >= 35 {
                 errorString := fmt.Sprintf("Reached recursion limit %s", token.TokenWord.Value)
-                terminateWithError(token.FilePath, token.Row, errorString)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
             includedOperations := lexFile(token.TokenWord.Value.(string), token.TokenWord.Expanded + 1)
             tokenList = append(includedOperations, tokenList...)
@@ -139,50 +136,50 @@ func compileTokenList(tokenList []Token) []Operation {
             n += 1
         } else if op.Op == constants.OP_ELSE {
             if n == 0 {
-                terminateWithError(token.FilePath, token.Row, "`else` can only be used after `if`")
+                util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if`")
             }
             if_ip := stack[n - 1]
             stack = stack[:n - 1]
             n -= 1
             if program[if_ip].Op != constants.OP_IF {
-                terminateWithError(token.FilePath, token.Row, "`else` can only be used after `if` block")
+                util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if` block")
             }
             // # ip + 1 so that it doesn't jump to else but rather body of else
-            program[if_ip] = Operation{ constants.OP_IF, 0, ip + 1 }
+            program[if_ip].Jump = ip + 1
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_END {
             if n == 0 {
-                terminateWithError(token.FilePath, token.Row, "`end` can only be used after `if` `else` `do`")
+                util.TerminateWithError(token.FilePath, token.Row, "`end` can only be used after `if` `else` `do`")
             }
             block_ip := stack[n - 1]
             stack = stack[:n - 1]
             n -= 1
             if program[block_ip].Op == constants.OP_IF || program[block_ip].Op == constants.OP_ELSE {
-                program[block_ip] = Operation{ program[block_ip].Op, 0, ip }
-                program[ip] = Operation{ constants.OP_END, 0, ip + 1 }
+                program[block_ip].Jump = ip
+                program[ip].Jump = ip + 1
             } else if program[block_ip].Op == constants.OP_DO {
-                program[ip] = Operation{ constants.OP_END, 0, program[block_ip].Jump }
-                program[block_ip] = Operation{ constants.OP_DO, 0, ip + 1 }
+                program[ip].Jump = program[block_ip].Jump
+                program[block_ip].Jump = ip + 1
             } else {
-                terminateWithError(token.FilePath, token.Row, "`end` can only close `if` `else` `do` blocks for now")
+                util.TerminateWithError(token.FilePath, token.Row, "`end` can only close `if` `else` `do` blocks for now")
             }
         } else if op.Op == constants.OP_WHILE {
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_DO {
             if n == 0 {
-                terminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
+                util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
             }
             while_ip := stack[n - 1]
             stack = stack[:n - 1]
             n -= 1
 
             if program[while_ip].Op != constants.OP_WHILE {
-                terminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
+                util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
             }
 
-            program[ip] = Operation{ constants.OP_DO, 0, while_ip }
+            program[ip].Jump = while_ip
             stack = append(stack, ip)
             n += 1
         } else if op.Op == constants.OP_MACRO {
@@ -191,7 +188,7 @@ func compileTokenList(tokenList []Token) []Operation {
 
             if macroName.TokenWord.Type != constants.TOKEN_WORD {
                 errorString := fmt.Sprintf("expected macro name to be a word but found %+v", macroName.TokenWord.Value)
-                terminateWithError(macroName.FilePath, macroName.Row, errorString)
+                util.TerminateWithError(macroName.FilePath, macroName.Row, errorString)
             }
 
             macroNameString := macroName.TokenWord.Value.(string)
@@ -199,19 +196,19 @@ func compileTokenList(tokenList []Token) []Operation {
             _, ok := constants.BUILTIN_WORDS[macroNameString]
             if ok {
                 errorString := fmt.Sprintf("redefinition of builtin word %+v", macroName.TokenWord.Value)
-                terminateWithError(token.FilePath, token.Row, errorString)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
             _, ok = macros[macroNameString]
             if ok {
                 errorString := fmt.Sprintf("redefinition of macro %+v", macroName.TokenWord.Value)
-                terminateWithError(token.FilePath, token.Row, errorString)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
             var nextToken Token
             if len(tokenList) == 0 {
                 errorString := fmt.Sprintf("macro definition incomplete %+v", macroName.TokenWord.Value)
-                terminateWithError(token.FilePath, token.Row, errorString)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
             macroStack := 1
@@ -237,7 +234,7 @@ func compileTokenList(tokenList []Token) []Operation {
 
             if nextToken.TokenWord.Type != constants.TOKEN_WORD || nextToken.TokenWord.Value.(string) != "end" {
                 errorString := fmt.Sprintf("macro definition incomplete %+v", macroName.TokenWord.Value)
-                terminateWithError(token.FilePath, token.Row, errorString)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
             ip -= 1
         }
@@ -267,7 +264,7 @@ func lexWord(filePath string, row int, tokenWord string) Word {
 
         if  (first == '"' || first == '\'') && first != last {
             errorString := fmt.Sprintf("unclosed literal %s", tokenWord)
-            terminateWithError(filePath, row, errorString)
+            util.TerminateWithError(filePath, row, errorString)
         }
     }
     return Word{ constants.TOKEN_WORD, tokenWord, 0 }

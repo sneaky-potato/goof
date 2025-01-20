@@ -8,8 +8,178 @@ import (
 	"strings"
 
 	"github.com/sneaky-potato/g4th/constants"
+	"github.com/sneaky-potato/g4th/util"
 	"github.com/sneaky-potato/g4th/lexer"
 )
+
+const (
+    TYPE_INT = iota
+    TYPE_PTR
+    TYPE_BOOL
+)
+
+type typedOperand struct {
+    typ      int
+    filePath string
+    row      int
+}
+
+
+func TypeCheckingProgram(program []lexer.Operation) {
+    var stack []typedOperand
+    var ip int = 0
+    for ip < len(program) {
+        op := program[ip]
+        switch op.Op {
+        case constants.OP_PUSH_INT:
+            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_PUSH_STR:
+        case constants.OP_PLUS:
+            var a, b typedOperand
+            if len(stack) < 2 {
+                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for +")
+            }
+            a, stack = stack[0], stack[1:]
+            b, stack = stack[0], stack[1:]
+            if a.typ == TYPE_INT && b.typ == TYPE_INT {
+                stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else if a.typ == TYPE_PTR && b.typ == TYPE_INT {
+                stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+            } else if b.typ == TYPE_PTR && a.typ == TYPE_INT {
+                stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+            } else {
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for +")
+            }
+        case constants.OP_MINUS:
+            var a, b typedOperand
+            if len(stack) < 2 {
+                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for -")
+            }
+            a, stack = stack[0], stack[1:]
+            b, stack = stack[0], stack[1:]
+            if a.typ == TYPE_INT && b.typ == TYPE_INT {
+                stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else if a.typ == TYPE_PTR && b.typ == TYPE_PTR {
+                stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else if a.typ == TYPE_INT && b.typ == TYPE_PTR {
+                stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+            } else {
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for -")
+            }
+        case constants.OP_MUL:
+            var a, b typedOperand
+            if len(stack) < 2 {
+                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for *")
+            }
+            a, stack = stack[0], stack[1:]
+            b, stack = stack[0], stack[1:]
+            if a.typ != TYPE_INT {
+                util.TerminateWithError(op.FilePath, op.Row, "first argument for * is expected to be integer")
+            }
+            if b.typ != TYPE_INT {
+                util.TerminateWithError(op.FilePath, op.Row, "second argument for * is expected to be integer")
+            }
+            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_MOD:
+            var a, b typedOperand
+            if len(stack) < 2 {
+                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for divmod")
+            }
+            a, stack = stack[0], stack[1:]
+            b, stack = stack[0], stack[1:]
+            if a.typ != TYPE_INT {
+                util.TerminateWithError(op.FilePath, op.Row, "first argument for * is expected to be integer")
+            }
+            if b.typ != TYPE_INT {
+                util.TerminateWithError(op.FilePath, op.Row, "second argument for * is expected to be integer")
+            }
+            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_DUMP:
+            if len(stack) < 1 {
+                util.TerminateWithError(op.FilePath, op.Row, "1 argument is required for dump")
+            }
+            _, stack = stack[0], stack[1:]
+        case constants.OP_EQ:
+            panic("not implemented")
+        case constants.OP_NE:
+            panic("not implemented")
+        case constants.OP_IF:
+            panic("not implemented")
+        case constants.OP_ELSE:
+            panic("not implemented")
+        case constants.OP_END:
+            panic("not implemented")
+        case constants.OP_DUP:
+            var a typedOperand
+            if len(stack) < 1 {
+                util.TerminateWithError(op.FilePath, op.Row, "1 argument is required for dup")
+            }
+            a, stack = stack[0], stack[1:]
+            stack = append(stack, a)
+            stack = append(stack, a)
+        case constants.OP_2DUP:
+            panic("not implemented")
+        case constants.OP_DROP:
+            panic("not implemented")
+        case constants.OP_OVER:
+            panic("not implemented")
+        case constants.OP_SHR:
+            panic("not implemented")
+        case constants.OP_SHL:
+            panic("not implemented")
+        case constants.OP_OR:
+            panic("not implemented")
+        case constants.OP_AND:
+            panic("not implemented")
+        case constants.OP_SWAP:
+            var a, b typedOperand
+            if len(stack) < 2 {
+                util.TerminateWithError(op.FilePath, op.Row, "2 argument is required for swap")
+            }
+            a, stack = stack[0], stack[1:]
+            b, stack = stack[0], stack[1:]
+            stack = append(stack, a)
+            stack = append(stack, b)
+        case constants.OP_ROT:
+            panic("not implemented")
+        case constants.OP_LT:
+            panic("not implemented")
+        case constants.OP_GT:
+            var a, b typedOperand
+            if len(stack) < 2 {
+                util.TerminateWithError(op.FilePath, op.Row, "2 argument is required for <")
+            }
+            a, stack = stack[0], stack[1:]
+            b, stack = stack[0], stack[1:]
+            if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
+                stack = append(stack, typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+            } else {
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for <")
+            }
+        case constants.OP_WHILE:
+        case constants.OP_DO:
+            var a typedOperand
+            if len(stack) < 1 {
+                util.TerminateWithError(op.FilePath, op.Row, "1 argument is required for do")
+            }
+            a, stack = stack[0], stack[1:]
+            if a.typ != TYPE_BOOL {
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for do")
+            }
+        case constants.OP_MEM:
+            panic("not implemented")
+        case constants.OP_LOAD:
+            panic("not implemented")
+        case constants.OP_STORE:
+            panic("not implemented")
+        case constants.OP_SYSCALL3:
+            panic("not implemented")
+        }
+        ip += 1
+    }
+
+}
 
 func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out, err := os.OpenFile(outputFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
