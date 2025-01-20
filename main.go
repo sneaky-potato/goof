@@ -63,7 +63,7 @@ func main() {
         callCmd("ld", "-o", "output", "output.o")
 
         if *runOnCom {
-            callCmd("./output")
+            callCmd("./output", comCmd.Args()[1:]...)
         }
     default:
         usage(os.Args[0])
