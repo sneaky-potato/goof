@@ -87,39 +87,39 @@ When the compiler encounters a string the following happens:
 
 #### stack
 
-| Name    | Signature        | Description                                                                                  |
-| ---     | ---              | ---                                                                                          |
+| Name    | Signature        | Description                                                                                 |
+| ---     | ---              | ---                                                                                         |
 | `dup`   | `a -- a a`       | duplicate an element on top of the stack                                                    |
 | `swap`  | `a b -- b a`     | swap 2 elements on the top of the stack                                                     |
 | `drop`  | `a b -- a`       | drops the top element of the stack                                                          |
 | `dump`  | `a b -- a`       | print the element on top of the stack in a free form to stdout and remove it from the stack |
-| `over`  | `a b -- a b a`   | copy the element below the top of the stack                                                  |
+| `over`  | `a b -- a b a`   | copy the element below the top of the stack                                                 |
 | `rot`   | `a b c -- b c a` | rotate the top three stack elements                                                         |
 
 #### Comparison
 
-| Name | Signature                              | Description                                                  |
-| ---  | ---                                    | ---                                                          |
-| `=` | `[a: int] [b: int] -- [a == b : bool]` | checks if two elements on top of the stack are equal        |
-| `!=` | `[a: int] [b: int] -- [a != b : bool]` | checks if two elements on top of the stack are unequal        |
-| `>` | `[a: int] [b: int] -- [a > b  : bool]` | applies the greater comparison on top two elements          |
-| `<` | `[a: int] [b: int] -- [a < b  : bool]` | applies the less comparison on top two elements             |
+| Name | Signature                              | Description                                            |
+| ---  | ---                                    | ---                                                    |
+| `=`  | `[a: int] [b: int] -- [a == b : bool]` | checks if two elements on top of the stack are equal   |
+| `!=` | `[a: int] [b: int] -- [a != b : bool]` | checks if two elements on top of the stack are unequal |
+| `>`  | `[a: int] [b: int] -- [a > b  : bool]` | applies the greater comparison on top two elements     |
+| `<`  | `[a: int] [b: int] -- [a < b  : bool]` | applies the less comparison on top two elements        |
 
 #### Arithmetic
 
-| Name     | Signature                                        | Description                                                                                                              |
-| ---      | ---                                              | ---                                                                                                                      |
-| `+`      | `[a: int] [b: int] -- [a + b: int]`              | sums up two elements on the top of the stack                                                                            |
-| `-`      | `[a: int] [b: int] -- [a - b: int]`              | subtracts two elements on the top of the stack                                                                           |
-| `*`      | `[a: int] [b: int] -- [a * b: int]`              | multiplies two elements on the top of the stack                                                                           |
-| `divmod`      | `[a: int] [b: int] -- [a / b: int] [a % b: int]`| divides two elements on the top of the stack, pushes quotient and remainder                                                                           |
+| Name     | Signature                                        | Description                                                                 |
+| ---      | ---                                              | ---                                                                         |
+| `+`      | `[a: int] [b: int] -- [a + b: int]`              | sums up two elements on the top of the stack                                |
+| `-`      | `[a: int] [b: int] -- [a - b: int]`              | subtracts two elements on the top of the stack                              |
+| `*`      | `[a: int] [b: int] -- [a * b: int]`              | multiplies two elements on the top of the stack                             |
+| `divmod` | `[a: int] [b: int] -- [a / b: int] [a % b: int]` | divides two elements on the top of the stack, pushes quotient and remainder |
 
 #### Bitwise
 
-| Name  | Signature                            | Description                   |
-| ---   | ---                                  | ---                           |
+| Name  | Signature                            | Description                  |
+| ---   | ---                                  | ---                          |
 | `shr` | `[a: int] [b: int] -- [a >> b: int]` | right **unsigned** bit shift |
-| `shl` | `[a: int] [b: int] -- [a << b: int]` | left bit shift              |
+| `shl` | `[a: int] [b: int] -- [a << b: int]` | left bit shift               |
 | `or`  | `[a: int] [b: int] -- [a \| b: int]` | bit `or`                     |
 | `and` | `[a: int] [b: int] -- [a & b: int]`  | bit `and`                    |
 
