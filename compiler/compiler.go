@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+    "github.com/sneaky-potato/g4th/model"
 	"github.com/sneaky-potato/g4th/constants"
 	"github.com/sneaky-potato/g4th/util"
-	"github.com/sneaky-potato/g4th/lexer"
 )
 
 const (
@@ -25,7 +25,7 @@ type typedOperand struct {
 }
 
 
-func TypeCheckingProgram(program []lexer.Operation) {
+func TypeCheckingProgram(program []model.Operation) {
     var stack []typedOperand
     var ip int = 0
     for ip < len(program) {
@@ -168,7 +168,7 @@ func TypeCheckingProgram(program []lexer.Operation) {
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for do")
             }
         case constants.OP_MEM:
-            panic("not implemented")
+            stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
         case constants.OP_LOAD:
             panic("not implemented")
         case constants.OP_STORE:
@@ -181,7 +181,7 @@ func TypeCheckingProgram(program []lexer.Operation) {
 
 }
 
-func CompileToAsm(outputFilePath string, program []lexer.Operation) {
+func CompileToAsm(outputFilePath string, program []model.Operation) {
     out, err := os.OpenFile(outputFilePath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
     defer out.Close()
     if err != nil {
@@ -244,7 +244,7 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 32 {
+    if constants.COUNT_OPS != 36 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -437,6 +437,14 @@ func CompileToAsm(outputFilePath string, program []lexer.Operation) {
             out.WriteString("    pop rbx\n")
             out.WriteString("    pop rax\n")
             out.WriteString("    mov [rax], bl\n")
+        case constants.OP_LOAD64:
+            panic("not implemented")
+        case constants.OP_STORE64:
+            panic("not implemented")
+        case constants.OP_ARGC:
+            panic("not implemented")
+        case constants.OP_ARGV:
+            panic("not implemented")
         case constants.OP_SYSCALL3:
             out.WriteString("    ;; -- syscall --\n")
             out.WriteString("    pop rax\n")

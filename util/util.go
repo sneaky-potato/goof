@@ -1,8 +1,10 @@
 package util
 
 import (
-    "fmt"
-    "os"
+	"fmt"
+	"os"
+
+    "github.com/sneaky-potato/g4th/model"
 )
 
 func TerminateWithError(filePath string, row int, err string) {
@@ -11,3 +13,8 @@ func TerminateWithError(filePath string, row int, err string) {
     os.Exit(1)
 }
 
+func checkNumberOfArguments(stkCnt int, argCnt int, op model.Operation) {
+    if stkCnt < argCnt {
+        TerminateWithError(op.FilePath, op.Row, "1 argument is required for dup")
+    }
+}

@@ -10,38 +10,19 @@ import (
 	"unicode"
 
 	"github.com/sneaky-potato/g4th/constants"
+    "github.com/sneaky-potato/g4th/model"
 	"github.com/sneaky-potato/g4th/util"
 )
 
-type Operation struct {
-    Op    int
-    Value interface{}
-    Jump  int
-    FilePath  string
-    Row       int
-}
-
-type Word struct {
-    Type     int
-    Value    interface{}
-    Expanded int
-}
-
-type Token struct {
-    FilePath  string
-    Row       int
-    TokenWord Word
-}
-
-func ParseTokenAsOp(token Token) Operation {
-    if constants.COUNT_OPS != 32 {
+func ParseTokenAsOp(token model.Token) model.Operation {
+    if constants.COUNT_OPS != 36 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
     if token.TokenWord.Type == constants.TOKEN_WORD {
         val, ok := constants.BUILTIN_WORDS[token.TokenWord.Value.(string)]
         if ok {
-            return Operation{ val, 0, -1, token.FilePath, token.Row }
+            return model.Operation{ val, 0, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -49,7 +30,7 @@ func ParseTokenAsOp(token Token) Operation {
     } else if token.TokenWord.Type == constants.TOKEN_INT {
         val, ok := token.TokenWord.Value.(int)
         if ok {
-            return Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
+            return model.Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -57,7 +38,7 @@ func ParseTokenAsOp(token Token) Operation {
     } else if token.TokenWord.Type == constants.TOKEN_STR {
         val, ok := token.TokenWord.Value.(string)
         if ok {
-            return Operation{ constants.OP_PUSH_STR, val, -1, token.FilePath, token.Row }
+            return model.Operation{ constants.OP_PUSH_STR, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -66,7 +47,7 @@ func ParseTokenAsOp(token Token) Operation {
         val, ok := token.TokenWord.Value.(string)
         valByte := []byte(val)[0]
         if ok {
-            return Operation{ constants.OP_PUSH_INT, valByte, -1, token.FilePath, token.Row }
+            return model.Operation{ constants.OP_PUSH_INT, valByte, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -75,7 +56,7 @@ func ParseTokenAsOp(token Token) Operation {
     panic("Unreachable code")
 }
 
-func expandMacro(macroTokens []Token, expanded int) []Token {
+func expandMacro(macroTokens []model.Token, expanded int) []model.Token {
     for i := range macroTokens {
         macroTokens[i].TokenWord.Expanded = expanded
     }
@@ -83,18 +64,18 @@ func expandMacro(macroTokens []Token, expanded int) []Token {
 }
 
 
-func compileTokenList(tokenList []Token) []Operation {
+func compileTokenList(tokenList []model.Token) []model.Operation {
     var stack []int
     var n int = 0
-    var program []Operation
-    macros := make(map[string][]Token)
+    var program []model.Operation
+    macros := make(map[string][]model.Token)
 
-    if constants.COUNT_OPS != 32 {
+    if constants.COUNT_OPS != 36 {
         panic("Exhaustive handling inside crossreference")
     }
 
     ip := 0
-    var token Token
+    var token model.Token
     for len(tokenList) > 0 {
         token, tokenList = tokenList[0], tokenList[1:]
 
@@ -205,7 +186,7 @@ func compileTokenList(tokenList []Token) []Operation {
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
-            var nextToken Token
+            var nextToken model.Token
             if len(tokenList) == 0 {
                 errorString := fmt.Sprintf("macro definition incomplete %+v", macroName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -244,22 +225,22 @@ func compileTokenList(tokenList []Token) []Operation {
     return program
 }
 
-func lexWord(filePath string, row int, tokenWord string) Word {
+func lexWord(filePath string, row int, tokenWord string) model.Word {
     var intValue int; var err error
 
     if intValue, err = strconv.Atoi(tokenWord); err == nil {
-        return Word{ constants.TOKEN_INT, intValue, 0 }
+        return model.Word{ constants.TOKEN_INT, intValue, 0 }
     }
     n := len(tokenWord)
     if n > 1 {
         first := tokenWord[0]
         last := tokenWord[n - 1]
         if first == '"' && last == '"' {
-            return Word{ constants.TOKEN_STR, tokenWord[1:n-1], 0 }
+            return model.Word{ constants.TOKEN_STR, tokenWord[1:n-1], 0 }
         }
 
         if first == '\'' && last == '\'' {
-            return Word{ constants.TOKEN_CHAR, tokenWord[1:n-1], 0 }
+            return model.Word{ constants.TOKEN_CHAR, tokenWord[1:n-1], 0 }
         }
 
         if  (first == '"' || first == '\'') && first != last {
@@ -267,7 +248,7 @@ func lexWord(filePath string, row int, tokenWord string) Word {
             util.TerminateWithError(filePath, row, errorString)
         }
     }
-    return Word{ constants.TOKEN_WORD, tokenWord, 0 }
+    return model.Word{ constants.TOKEN_WORD, tokenWord, 0 }
 }
 
 var quoted bool = false
@@ -287,8 +268,8 @@ func splitProgramWithStrings(r rune) bool {
     return !quoted && unicode.IsSpace(r)
 }
 
-func lexFile(filePath string, expanded int) []Token {
-    var tokenList []Token
+func lexFile(filePath string, expanded int) []model.Token {
+    var tokenList []model.Token
     file, err := os.Open(filePath)
     if err != nil {
         log.Fatal(err)
@@ -306,7 +287,7 @@ func lexFile(filePath string, expanded int) []Token {
         for _, word := range words {
             tokenWord := lexWord(filePath, row, word)
             tokenWord.Expanded = expanded
-            tokenList = append(tokenList, Token{ filePath, row, tokenWord })
+            tokenList = append(tokenList, model.Token{ filePath, row, tokenWord })
         }
         row += 1
     }
@@ -317,7 +298,7 @@ func lexFile(filePath string, expanded int) []Token {
 
     return tokenList
 }
-func LoadProgramFromFile(filePath string) []Operation {
+func LoadProgramFromFile(filePath string) []model.Operation {
     tokenList := lexFile(filePath, 0)
     program := compileTokenList(tokenList)
     return program
