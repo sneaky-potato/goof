@@ -24,157 +24,231 @@ type typedOperand struct {
     row      int
 }
 
-
 func TypeCheckingProgram(program []model.Operation) {
-    var stack []typedOperand
+
+    var stack = new(util.Stack[typedOperand])
     var ip int = 0
     for ip < len(program) {
         op := program[ip]
         switch op.Op {
         case constants.OP_PUSH_INT:
-            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_PUSH_STR:
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
         case constants.OP_PLUS:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "+")
             var a, b typedOperand
-            if len(stack) < 2 {
-                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for +")
-            }
-            a, stack = stack[0], stack[1:]
-            b, stack = stack[0], stack[1:]
+            a = stack.Pop()
+            b = stack.Pop()
             if a.typ == TYPE_INT && b.typ == TYPE_INT {
-                stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
             } else if a.typ == TYPE_PTR && b.typ == TYPE_INT {
-                stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
             } else if b.typ == TYPE_PTR && a.typ == TYPE_INT {
-                stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for +")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for +")
             }
         case constants.OP_MINUS:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "-")
             var a, b typedOperand
-            if len(stack) < 2 {
-                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for -")
-            }
-            a, stack = stack[0], stack[1:]
-            b, stack = stack[0], stack[1:]
+            a = stack.Pop()
+            b = stack.Pop()
             if a.typ == TYPE_INT && b.typ == TYPE_INT {
-                stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
             } else if a.typ == TYPE_PTR && b.typ == TYPE_PTR {
-                stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
             } else if a.typ == TYPE_INT && b.typ == TYPE_PTR {
-                stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for -")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for -")
             }
         case constants.OP_MUL:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "*")
             var a, b typedOperand
-            if len(stack) < 2 {
-                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for *")
-            }
-            a, stack = stack[0], stack[1:]
-            b, stack = stack[0], stack[1:]
+            a = stack.Pop()
+            b = stack.Pop()
             if a.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "first argument for * is expected to be integer")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for *")
             }
             if b.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "second argument for * is expected to be integer")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for *")
             }
-            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_MOD:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "divmod")
             var a, b typedOperand
-            if len(stack) < 2 {
-                util.TerminateWithError(op.FilePath, op.Row, "2 arguments are required for divmod")
-            }
-            a, stack = stack[0], stack[1:]
-            b, stack = stack[0], stack[1:]
+            a = stack.Pop()
+            b = stack.Pop()
             if a.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "first argument for * is expected to be integer")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for divmod")
             }
             if b.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "second argument for * is expected to be integer")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for divmod")
             }
-            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
-            stack = append(stack, typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_DUMP:
-            if len(stack) < 1 {
-                util.TerminateWithError(op.FilePath, op.Row, "1 argument is required for dump")
-            }
-            _, stack = stack[0], stack[1:]
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "dump")
+            _ = stack.Pop()
         case constants.OP_EQ:
-            panic("not implemented")
-        case constants.OP_NE:
-            panic("not implemented")
-        case constants.OP_IF:
-            panic("not implemented")
-        case constants.OP_ELSE:
-            panic("not implemented")
-        case constants.OP_END:
-            panic("not implemented")
-        case constants.OP_DUP:
-            var a typedOperand
-            if len(stack) < 1 {
-                util.TerminateWithError(op.FilePath, op.Row, "1 argument is required for dup")
-            }
-            a, stack = stack[0], stack[1:]
-            stack = append(stack, a)
-            stack = append(stack, a)
-        case constants.OP_2DUP:
-            panic("not implemented")
-        case constants.OP_DROP:
-            panic("not implemented")
-        case constants.OP_OVER:
-            panic("not implemented")
-        case constants.OP_SHR:
-            panic("not implemented")
-        case constants.OP_SHL:
-            panic("not implemented")
-        case constants.OP_OR:
-            panic("not implemented")
-        case constants.OP_AND:
-            panic("not implemented")
-        case constants.OP_SWAP:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "=")
             var a, b typedOperand
-            if len(stack) < 2 {
-                util.TerminateWithError(op.FilePath, op.Row, "2 argument is required for swap")
-            }
-            a, stack = stack[0], stack[1:]
-            b, stack = stack[0], stack[1:]
-            stack = append(stack, a)
-            stack = append(stack, b)
-        case constants.OP_ROT:
-            panic("not implemented")
-        case constants.OP_LT:
-            panic("not implemented")
-        case constants.OP_GT:
-            var a, b typedOperand
-            if len(stack) < 2 {
-                util.TerminateWithError(op.FilePath, op.Row, "2 argument is required for <")
-            }
-            a, stack = stack[0], stack[1:]
-            b, stack = stack[0], stack[1:]
+            a = stack.Pop()
+            b = stack.Pop()
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
-                stack = append(stack, typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+                stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for <")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for =")
+            }
+        case constants.OP_NE:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "!=")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
+                stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for !=")
+            }
+        case constants.OP_IF:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "if")
+            var a typedOperand
+            a = stack.Pop()
+            if a.typ != TYPE_BOOL {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for if")
+            }
+        case constants.OP_ELSE:
+        case constants.OP_END:
+        case constants.OP_DUP:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "dup")
+            var a typedOperand
+            a = stack.Pop()
+            stack.Push(a)
+            stack.Push(a)
+        case constants.OP_2DUP:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "2dup")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            stack.Push(b)
+            stack.Push(a)
+            stack.Push(b)
+            stack.Push(a)
+        case constants.OP_DROP:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "drop")
+            _ = stack.Pop()
+        case constants.OP_OVER:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "over")
+            b := stack.Peek(1)
+            stack.Push(b)
+        case constants.OP_SHR:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "shr")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == TYPE_INT && b.typ == TYPE_INT {
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for shr")
+            }
+        case constants.OP_SHL:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "shl")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == TYPE_INT && b.typ == TYPE_INT {
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for shl")
+            }
+        case constants.OP_OR:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "|")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == TYPE_INT && b.typ == TYPE_INT {
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for |")
+            }
+        case constants.OP_AND:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "&")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == TYPE_INT && b.typ == TYPE_INT {
+                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for &")
+            }
+        case constants.OP_SWAP:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "swap")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            stack.Push(a)
+            stack.Push(b)
+        case constants.OP_ROT:
+            util.CheckNumberOfArguments(stack.Size(), 3, op, "rot")
+            var a, b, c typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            c = stack.Pop()
+            stack.Push(b)
+            stack.Push(a)
+            stack.Push(c)
+        case constants.OP_LT:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "<")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
+                stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for <")
+            }
+        case constants.OP_GT:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, ">")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
+                stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+            } else {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for >")
             }
         case constants.OP_WHILE:
         case constants.OP_DO:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "do")
             var a typedOperand
-            if len(stack) < 1 {
-                util.TerminateWithError(op.FilePath, op.Row, "1 argument is required for do")
-            }
-            a, stack = stack[0], stack[1:]
+            a = stack.Pop()
             if a.typ != TYPE_BOOL {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for do")
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for do")
             }
         case constants.OP_MEM:
-            stack = append(stack, typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
         case constants.OP_LOAD:
-            panic("not implemented")
+            util.CheckNumberOfArguments(stack.Size(), 1, op, ",")
+            a := stack.Pop()
+            if a.typ != TYPE_PTR {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for ,")
+            }
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_STORE:
-            panic("not implemented")
+            util.CheckNumberOfArguments(stack.Size(), 2, op, ".")
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            if a.typ != TYPE_INT || b.typ != TYPE_PTR {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for .")
+            }
         case constants.OP_SYSCALL3:
-            panic("not implemented")
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "syscall3")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
         }
         ip += 1
     }
@@ -438,9 +512,16 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    pop rax\n")
             out.WriteString("    mov [rax], bl\n")
         case constants.OP_LOAD64:
-            panic("not implemented")
+            out.WriteString("    ;; -- load --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    xor rbx, rbx\n")
+            out.WriteString("    mov rbx, [rax]\n")
+            out.WriteString("    push rbx\n")
         case constants.OP_STORE64:
-            panic("not implemented")
+            out.WriteString("    ;; -- store --\n")
+            out.WriteString("    pop rbx\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    mov [rax], rbx\n")
         case constants.OP_ARGC:
             panic("not implemented")
         case constants.OP_ARGV:

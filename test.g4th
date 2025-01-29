@@ -1,11 +1,4 @@
 include "std.g4th"
 
-macro loop
-    4 0 while 2dup > do
-        dup dump
-        1 +
-    end
-end
 
-loop
-
+1 1 + dump

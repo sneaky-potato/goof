@@ -7,7 +7,7 @@ mem N 2 - + 1 .
 0 while dup N < do
     0 while dup N 2 - < do
         // if (mem[j] == 1)
-        dup mem + , if
+        dup mem + , 1 = if
             mem N + '#' .
         else
             mem N + ' ' .
@@ -23,12 +23,12 @@ mem N 2 - + 1 .
     // pattern
     mem , 1 shl
     mem 1 + ,
-    or
+    |
 
     1 while dup N 2 - < do
-        swap 1 shl 7 and
-        over mem + 1 + , or
-        over over 110 swap shr 1 and
+        swap 1 shl 7 &
+        over mem + 1 + , |
+        over over 110 swap shr 1 &
         swap mem + swap .
         swap
         1 +

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-    "github.com/sneaky-potato/g4th/model"
+	"github.com/sneaky-potato/g4th/model"
 )
 
 func TerminateWithError(filePath string, row int, err string) {
@@ -13,8 +13,14 @@ func TerminateWithError(filePath string, row int, err string) {
     os.Exit(1)
 }
 
-func checkNumberOfArguments(stkCnt int, argCnt int, op model.Operation) {
+func WarnWithError(filePath string, row int, err string) {
+    errorString := fmt.Sprintf("%s:%d -- %s\n", filePath, row, err)
+    fmt.Fprintf(os.Stderr, errorString)
+}
+
+func CheckNumberOfArguments(stkCnt int, argCnt int, op model.Operation, opString string) {
     if stkCnt < argCnt {
-        TerminateWithError(op.FilePath, op.Row, "1 argument is required for dup")
+        errorString := fmt.Sprintf("operation %s requires %d arguments but found %d\n", opString, argCnt, stkCnt)
+        WarnWithError(op.FilePath, op.Row, errorString)
     }
 }
