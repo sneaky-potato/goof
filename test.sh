@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ -z "${TESTPATH}" ]
 then
     TESTPATH=$(dirname $(readlink -e "$0"))
@@ -7,24 +9,49 @@ then
 fi
 
 declare -a TESTCASES
+declare -a TESTCASESOUT
 
 for test_file in $(ls "${TESTPATH}"); do
     if [[ $test_file == *.g4th ]]
     then
         TESTCASES+=("$test_file")
+    elif [[ $test_file == *.g4th.txt ]]
+    then
+        TESTCASESOUT+=("$test_file")
     fi
 done
 
 record() {
-    # TODO complete this function
-    echo "record function invoked"
-    printf '%s\n' "${TESTCASES[@]}"
+    for test_file in "${TESTCASES[@]}"
+    do
+        echo "recording file $test_file"
+        go run main.go com -skip-type "tests/$test_file"
+        ./output > "tests/$test_file.txt"
+    done
+}
+
+fail() {
+    echo "test failed $1"
+    rm -rf "tests/*.tmp"
+    exit 2
 }
 
 run() {
-    # TODO complete this function
-    echo "run function invoked"
-    printf '%s\n' "${TESTCASES[@]}"
+    LEN=${#TESTCASESOUT[@]}
+    if [ "${#TESTCASESOUT[@]}" -eq "0" ]; then
+        echo "no text files in test directory, please use --record before using this"
+        exit 2
+    fi
+
+    for test_file in "${TESTCASES[@]}"
+    do
+        echo "testing file $test_file"
+        go run main.go com -skip-type "tests/$test_file"
+        ./output > "tests/$test_file.tmp"
+        cmp --silent "tests/$test_file.tmp" "tests/$test_file.txt" || fail "$test_file"
+        rm -rf "tests/$test_file.tmp"
+        echo "PASS $test_file"
+    done
 }
 
 show_help() {

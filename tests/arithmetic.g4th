@@ -1,4 +1,4 @@
-1 2 + dup dump
-3 2 - dup dump
-4 10 * dup dump
-7 10 divmod dump dump
+1 2 + dump
+3 2 - dump
+4 10 * dump
+10 7 divmod dump dump
