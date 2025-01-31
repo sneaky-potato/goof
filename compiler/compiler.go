@@ -168,8 +168,8 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ == TYPE_INT && b.typ == TYPE_INT {
-                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_BOOL) {
+                stack.Push(typedOperand{ a.typ, op.FilePath, op.Row })
             } else {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for |")
             }
@@ -178,8 +178,8 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ == TYPE_INT && b.typ == TYPE_INT {
-                stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_BOOL) {
+                stack.Push(typedOperand{ a.typ, op.FilePath, op.Row })
             } else {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for &")
             }
@@ -245,7 +245,8 @@ func TypeCheckingProgram(program []model.Operation) {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for .")
             }
         case constants.OP_SYSCALL3:
-            util.CheckNumberOfArguments(stack.Size(), 1, op, "syscall3")
+            util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
+            _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()
