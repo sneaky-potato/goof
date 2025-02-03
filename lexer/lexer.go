@@ -66,7 +66,6 @@ func expandMacro(macroTokens []model.Token, expanded int) []model.Token {
 
 func compileTokenList(tokenList []model.Token) []model.Operation {
     var stack = new(util.Stack[int])
-    var n int = 0
     var program []model.Operation
     macros := make(map[string][]model.Token)
 
@@ -114,26 +113,22 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
         }
         if op.Op == constants.OP_IF {
             stack.Push(ip)
-            n += 1
         } else if op.Op == constants.OP_ELSE {
-            if n == 0 {
+            if stack.Size() == 0 {
                 util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if`")
             }
             if_ip := stack.Pop()
-            n -= 1
             if program[if_ip].Op != constants.OP_IF {
                 util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if` block")
             }
             // # ip + 1 so that it doesn't jump to else but rather body of else
             program[if_ip].Jump = ip + 1
             stack.Push(ip)
-            n += 1
         } else if op.Op == constants.OP_END {
-            if n == 0 {
+            if stack.Size() == 0 {
                 util.TerminateWithError(token.FilePath, token.Row, "`end` can only be used after `if` `else` `do`")
             }
             block_ip := stack.Pop()
-            n -= 1
             if program[block_ip].Op == constants.OP_IF || program[block_ip].Op == constants.OP_ELSE {
                 program[block_ip].Jump = ip
                 program[ip].Jump = ip + 1
@@ -145,13 +140,11 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             }
         } else if op.Op == constants.OP_WHILE {
             stack.Push(ip)
-            n += 1
         } else if op.Op == constants.OP_DO {
-            if n == 0 {
+            if stack.Size() == 0 {
                 util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
             }
             while_ip := stack.Pop()
-            n -= 1
 
             if program[while_ip].Op != constants.OP_WHILE {
                 util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
@@ -159,7 +152,6 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
 
             program[ip].Jump = while_ip
             stack.Push(ip)
-            n += 1
         } else if op.Op == constants.OP_MACRO {
             token, tokenList = tokenList[0], tokenList[1:]
             var macroName = token
