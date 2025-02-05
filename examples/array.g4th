@@ -6,29 +6,32 @@ macro BUFFER_CAP 256 end
 BUFFER_CAP mem stdin read
 "Enter elements\n" stdout write
 
-0        // sum value
-mem stoi // cnt value
-over     // cnt value
+mem stoi // cnt
+dup
 
-mem
-while over 0 > do
+0 
+// cnt cnt i
+while 2dup > do
+    dup mem +
+    // cnt cnt i mem+i
     BUFFER_CAP over stdin read
-    dup dup stoi .
+    // cnt i mem+i
+    dup stoi .
+    // cnt i
     1 +
-    swap 1 -
-    swap
 end
 
 drop drop
 
 "Elements are:\n" stdout write
 
-mem
-// 0 cnt mem
-while over 0 > do
-    dup , 
-    rot
+
+0 
+// cnt i
+while 2dup > do
+    dup
+    mem + ,
+    // cnt i mem[i]
+    dump
     1 +
-    swap 1 -
-    swap
 end

@@ -30,17 +30,19 @@ func callCmd(cmd string, args ...string) {
 func usage(program string) {
 	fmt.Printf("Usage: %s <OPTION> [ARGS]\n", program)
 	fmt.Println("OPTIONS:")
-	fmt.Println("    sim <file>        Simulate program")
-	fmt.Println("    com <file>        Compile program")
+	fmt.Println("    sim <file>         Simulate program")
+	fmt.Println("    com <file>         Compile program")
 	fmt.Println("        SUBOPTIONS:")
-	fmt.Println("            -r        run the program after successful compilation")
-	fmt.Println("    help              Print this help to stdout")
+	fmt.Println("            -r         run the program after successful compilation")
+	fmt.Println("            -skip-type skip static type checking during compilation")
+	fmt.Println("    help               Print this help to stdout")
 }
 
 func main() {
     simCmd := flag.NewFlagSet("sim", flag.ExitOnError)
     comCmd := flag.NewFlagSet("com", flag.ExitOnError)
     runOnCom := comCmd.Bool("r", false, "run")
+    skipTypeChecking := comCmd.Bool("skip-type", false, "skip static type checking")
     
     if len(os.Args) < 2 {
         fmt.Println("expected subcommand")
@@ -56,6 +58,10 @@ func main() {
         comCmd.Parse(os.Args[2:])
         filePath := comCmd.Args()[0]
         program := lexer.LoadProgramFromFile(filePath)
+
+        if *skipTypeChecking == false {
+            compiler.TypeCheckingProgram(program)
+        }
 
         compiler.CompileToAsm("output.asm", program)
 

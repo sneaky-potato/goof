@@ -52,6 +52,9 @@ $ ldd output
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
+## BUGS
+- [ ] Type checking does not work correctly with control flow, check [ref](https://binji.github.io/posts/webassembly-type-checking/)
+
 ## Language Reference
 
 The language implements the following constructs

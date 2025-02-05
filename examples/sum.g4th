@@ -1,0 +1,45 @@
+include "std.g4th"
+
+macro BUFFER_CAP 256 end
+
+"Enter number of elements:\n" stdout write
+BUFFER_CAP mem stdin read
+"Enter elements\n" stdout write
+
+0 // sum
+mem stoi // cnt
+dup
+0 
+// sum cnt cnt i
+while 2dup > do
+    dup mem +
+    BUFFER_CAP over stdin read
+    // sum cnt cnt i mem+i
+    dup stoi .
+    // cnt i
+    1 +
+end
+
+drop drop
+
+"Sum: " stdout write
+
+0
+// sum cnt i
+while 2dup > do
+    rot rot
+    // cnt i sum
+    swap // cnt sum i
+    dup
+    mem + ,
+    // cnt sum i mem[i]
+    rot rot
+    // cnt i mem[i] sum
+    +
+    // cnt i sum
+    rot
+    1 +
+end
+
+drop drop
+dump

@@ -11,7 +11,7 @@ mem dup 10 .
 
 1 + dup 60 . // key
 
-0 6 while 2dup 2dup < rot = or do
+0 6 while 2dup 2dup < rot = | do
     2dup // low high
     + 1 shr // mid
     1 - // mid-1

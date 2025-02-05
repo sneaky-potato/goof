@@ -1,0 +1,4 @@
+1 2 + dump
+3 2 - dump
+4 10 * dump
+10 7 divmod dump dump

@@ -2,3 +2,4 @@
     dup dump
     1 -
 end
+"end of while loop\n" 1 1 syscall3
