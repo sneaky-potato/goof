@@ -6,16 +6,15 @@ macro BUFFER_CAP 256 end
 BUFFER_CAP mem stdin read
 "Enter elements\n" stdout write
 
+0 // sum
 mem stoi // cnt
 dup
-
 0 
-// cnt cnt i
+// sum cnt cnt i
 while 2dup > do
     dup mem +
-    // cnt cnt i mem+i
     BUFFER_CAP over stdin read
-    // cnt i mem+i
+    // sum cnt cnt i mem+i
     dup stoi .
     // cnt i
     1 +
@@ -23,15 +22,24 @@ end
 
 drop drop
 
-"Elements are:\n" stdout write
+"Sum: " stdout write
 
-
-0 
-// cnt i
+0
+// sum cnt i
 while 2dup > do
+    rot rot
+    // cnt i sum
+    swap // cnt sum i
     dup
     mem + ,
-    // cnt i mem[i]
-    dump
+    // cnt sum i mem[i]
+    rot rot
+    // cnt i mem[i] sum
+    +
+    // cnt i sum
+    rot
     1 +
 end
+
+drop drop
+dump
