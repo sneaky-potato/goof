@@ -52,6 +52,10 @@ $ ldd output
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
+## BUGS
+- [ ] Type checking does not work correctly on while loops
+    - We need to evaulate the while condition on hitting end in type checking
+
 ## Language Reference
 
 The language implements the following constructs

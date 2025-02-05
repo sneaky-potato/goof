@@ -119,8 +119,6 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ != TYPE_BOOL {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for if")
             }
-        case constants.OP_ELSE:
-        case constants.OP_END:
         case constants.OP_DUP:
             util.CheckNumberOfArguments(stack.Size(), 1, op, "dup")
             var a typedOperand
@@ -141,7 +139,11 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
         case constants.OP_OVER:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "over")
-            b := stack.Peek(1)
+            var a, b typedOperand
+            a = stack.Pop()
+            b = stack.Pop()
+            stack.Push(b)
+            stack.Push(a)
             stack.Push(b)
         case constants.OP_SHR:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "shr")
@@ -219,7 +221,6 @@ func TypeCheckingProgram(program []model.Operation) {
             } else {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for >")
             }
-        case constants.OP_WHILE:
         case constants.OP_DO:
             util.CheckNumberOfArguments(stack.Size(), 1, op, "do")
             var a typedOperand
@@ -250,6 +251,7 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()
+        default:
         }
         ip += 1
     }

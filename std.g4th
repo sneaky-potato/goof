@@ -50,12 +50,19 @@ end
 // string pointed to by ptr must be null terminated
 macro stoi
     0
+    // ptr val
     while over , dup 10 != do
-        '0' -
-        swap 10 * +
+        // ptr val *ptr
+        48 -
+        // ptr val *ptr-'0'
+        swap 
+        10 * +
+        // ptr [*ptr-'0' + val*10]
         swap
+        // [*ptr-'0' + val*10] ptr
         1 +
         swap
+        // ptr+1 [*ptr-'0' + val*10]
     end
     drop swap drop
 end
