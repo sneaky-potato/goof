@@ -53,8 +53,7 @@ $ ldd output
 - [ ] Add library builtin functions
 
 ## BUGS
-- [ ] Type checking does not work correctly on while loops
-    - We need to evaulate the while condition on hitting end in type checking
+- [ ] Type checking does not work correctly with control flow, check [ref](https://binji.github.io/posts/webassembly-type-checking/)
 
 ## Language Reference
 
