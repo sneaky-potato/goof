@@ -27,3 +27,7 @@ func (s *Stack[T]) Peek(idx int) T {
     }
     return s.items[idx]
 }
+
+func (s *Stack[T]) Assign(r *Stack[T]) {
+    s.items = r.items
+}

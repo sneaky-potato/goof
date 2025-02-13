@@ -24,9 +24,29 @@ type typedOperand struct {
     row      int
 }
 
+func stackEqual(s *util.Stack[typedOperand], r *util.Stack[typedOperand]) bool {
+    i := 0
+    if s.Size() != r.Size() {
+        return false
+    }
+    for i < s.Size() {
+        if s.Peek(i).typ != r.Peek(i).typ {
+            return false
+        }
+        i += 1
+    }
+    return true
+}
+
+type blockStack struct {
+    stack util.Stack[typedOperand]
+    typ   int
+}
+
 func TypeCheckingProgram(program []model.Operation) {
 
     var stack = new(util.Stack[typedOperand])
+    var blockStacks = new(util.Stack[blockStack])
     var ip int = 0
     for ip < len(program) {
         op := program[ip]
@@ -118,6 +138,57 @@ func TypeCheckingProgram(program []model.Operation) {
             a = stack.Pop()
             if a.typ != TYPE_BOOL {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for if")
+            }
+            blockStacks.Push(blockStack {*stack, op.Op})
+        case constants.OP_ELSE:
+            var block blockStack
+            block = blockStacks.Pop()
+            if block.typ != constants.OP_IF {
+                panic("else can only be used after if")
+            }
+            blockStacks.Push(blockStack {*stack, op.Op})
+            stack.Assign(&block.stack)
+        case constants.OP_WHILE:
+            blockStacks.Push(blockStack {*stack, op.Op})
+        case constants.OP_DO:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "do")
+            var a typedOperand
+            a = stack.Pop()
+            if a.typ != TYPE_BOOL {
+                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for do")
+            }
+            util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "do")
+            var block blockStack
+            block = blockStacks.Pop()
+            if block.typ != constants.OP_WHILE {
+                panic("do must be used after while")
+            }
+            isEqual := stackEqual(stack, &block.stack)
+            if !isEqual {
+                util.WarnWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on stack")
+            }
+            blockStacks.Push(blockStack {*stack, op.Op})
+        case constants.OP_END:
+            util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "end")
+            var block blockStack
+            block = blockStacks.Pop()
+            if block.typ == constants.OP_IF {
+                isEqual := stackEqual(stack, &block.stack)
+                if !isEqual {
+                    util.WarnWithError(op.FilePath, op.Row, "else-less if must not modify the data stack")
+                }
+            } else if block.typ == constants.OP_ELSE {
+                isEqual := stackEqual(stack, &block.stack)
+                if !isEqual {
+                    util.WarnWithError(op.FilePath, op.Row, "both branches of if-block must produce same type arguments")
+                }
+            } else if block.typ == constants.OP_DO {
+                isEqual := stackEqual(stack, &block.stack)
+                if !isEqual {
+                    util.WarnWithError(op.FilePath, op.Row, "do-end block must not modify the data stack")
+                }
+            } else {
+                panic("unreachable")
             }
         case constants.OP_DUP:
             util.CheckNumberOfArguments(stack.Size(), 1, op, "dup")
@@ -221,13 +292,6 @@ func TypeCheckingProgram(program []model.Operation) {
             } else {
                 util.WarnWithError(op.FilePath, op.Row, "invalid arguments for >")
             }
-        case constants.OP_DO:
-            util.CheckNumberOfArguments(stack.Size(), 1, op, "do")
-            var a typedOperand
-            a = stack.Pop()
-            if a.typ != TYPE_BOOL {
-                util.WarnWithError(op.FilePath, op.Row, "invalid arguments for do")
-            }
         case constants.OP_MEM:
             stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
         case constants.OP_LOAD:
@@ -255,7 +319,6 @@ func TypeCheckingProgram(program []model.Operation) {
         }
         ip += 1
     }
-
 }
 
 func CompileToAsm(outputFilePath string, program []model.Operation) {
@@ -328,7 +391,6 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     for ip < len(program) {
         out.WriteString(fmt.Sprintf("addr_%d:\n", ip))
         operation := program[ip]
-
         switch operation.Op {
         case constants.OP_PUSH_INT:
             out.WriteString(fmt.Sprintf("    ;; -- push int %d --\n", operation.Value))
