@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
-    "github.com/sneaky-potato/g4th/model"
-	"github.com/sneaky-potato/g4th/constants"
-	"github.com/sneaky-potato/g4th/util"
+    "github.com/sneaky-potato/goof/model"
+	"github.com/sneaky-potato/goof/constants"
+	"github.com/sneaky-potato/goof/util"
 )
 
 const (
@@ -68,7 +68,6 @@ type blockStack struct {
 }
 
 func TypeCheckingProgram(program []model.Operation) {
-
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
     var ip int = 0

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/sneaky-potato/g4th/constants"
-    "github.com/sneaky-potato/g4th/model"
-	"github.com/sneaky-potato/g4th/util"
+	"github.com/sneaky-potato/goof/constants"
+    "github.com/sneaky-potato/goof/model"
+	"github.com/sneaky-potato/goof/util"
 )
 
 func ParseTokenAsOp(token model.Token) model.Operation {

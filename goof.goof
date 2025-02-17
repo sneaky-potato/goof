@@ -1,4 +1,4 @@
-include "std.g4th"
+include "std.goof"
 
 macro OP_PUSH_INT 0 end
 macro OP_PLUS     1 end

@@ -8,8 +8,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/sneaky-potato/g4th/compiler"
-	"github.com/sneaky-potato/g4th/lexer"
+	"github.com/sneaky-potato/goof/compiler"
+	"github.com/sneaky-potato/goof/lexer"
 )
 
 func callCmd(cmd string, args ...string) {

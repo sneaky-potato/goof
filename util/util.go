@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sneaky-potato/g4th/model"
+	"github.com/sneaky-potato/goof/model"
 )
 
 func TerminateWithError(filePath string, row int, err string) {
