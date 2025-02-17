@@ -431,7 +431,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 37 {
+    if constants.COUNT_OPS != 38 {
         panic("Exhaustive handling in compilation")
     }
 

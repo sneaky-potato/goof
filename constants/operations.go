@@ -45,6 +45,7 @@ const (
     OP_ARGC
     OP_DUMP
     OP_INCLUDE
+    OP_HERE
     COUNT_OPS
 )
 
@@ -82,6 +83,7 @@ var BUILTIN_WORDS = map[string]int{
     "syscall3": OP_SYSCALL3,
     "dump": OP_DUMP,
     "include": OP_INCLUDE,
+    "here": OP_HERE,
 }
 
 const MEM_CAPACITY = 640_000

@@ -70,3 +70,7 @@ macro stoi
     end
     drop swap drop
 end
+
+macro puts
+    stdout write
+end

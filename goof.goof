@@ -1,0 +1,32 @@
+include "std.g4th"
+
+macro OP_PUSH_INT 0 end
+macro OP_PLUS     1 end
+macro OP_DUMP     2 end
+
+macro ops-count mem end
+macro ops ops-count 8 + end
+macro sizeof(Op) 16 end
+
+// type operand
+macro push-op
+    ops-count ,64 sizeof(Op) * ops +
+    dup 8 + rot rot swap .64 .64
+    here puts ": TODO: push-ops is not implemented yet\n" puts 1 exit
+end
+
+macro compile-ops
+    here puts ": TODO: compile-ops is not implemented yet\n" puts 1 exit
+end
+
+macro dump-ops
+    here puts ": TODO: dump-ops is not implemented yet\n" puts 1 exit
+end
+
+OP_PUSH_INT 34 push-op
+OP_PUSH_INT 35 push-op
+OP_PLUS     0  push-op
+OP_DUMP     0  push-op
+
+compile-ops
+
