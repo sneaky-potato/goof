@@ -47,10 +47,11 @@ $ ldd output
 - [x] Native
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
+- [ ] Add editor config for vim and nvim for goof source files
 - [ ] Deploy a static site with an online playground for compiling on the go
     - [ ] investigate and use goroutine for this
 - [ ] Include directories and add support for finding included files
-- [ ] Self-hosted compiler
+- [.] Self-hosted compiler
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
