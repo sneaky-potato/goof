@@ -29,7 +29,7 @@ flowchart LR
 
 For compiling the program written in `test.goof` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
 ```shell
-go run main.go com ./test.porth
+go run main.go com ./test.goof
 ./output
 ```
 

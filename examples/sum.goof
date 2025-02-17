@@ -1,4 +1,4 @@
-include "std.g4th"
+include "std.goof"
 
 macro BUFFER_CAP 256 end
 

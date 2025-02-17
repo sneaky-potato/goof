@@ -1,4 +1,4 @@
-include "std.g4th"
+include "std.goof"
 
 // prints the command line arguments
 while dup 0 > do
