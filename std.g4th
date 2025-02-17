@@ -51,7 +51,8 @@ end
 macro stoi
     0
     // ptr val
-    while over , dup 10 != do
+    over ,
+    while dup 10 != do
         // ptr val *ptr
         48 -
         // ptr val *ptr-'0'
@@ -63,6 +64,7 @@ macro stoi
         1 +
         swap
         // ptr+1 [*ptr-'0' + val*10]
+        over ,
     end
     drop swap drop
 end

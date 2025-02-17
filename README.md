@@ -46,14 +46,14 @@ $ ldd output
 - [x] Compiled
 - [x] Native
 - [x] Turing complete
-- [ ] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
+- [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [ ] Include directories and add support for finding included files
 - [ ] Self-hosted compiler
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
 ## BUGS
-- [ ] Type checking does not work correctly with control flow, check [ref](https://binji.github.io/posts/webassembly-type-checking/)
+- [x] Type checking does not work correctly with control flow, check PR [here](https://github.com/sneaky-potato/g4th/pull/4)
 
 ## Language Reference
 

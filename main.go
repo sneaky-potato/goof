@@ -34,7 +34,7 @@ func usage(program string) {
 	fmt.Println("    com <file>         Compile program")
 	fmt.Println("        SUBOPTIONS:")
 	fmt.Println("            -r         run the program after successful compilation")
-	fmt.Println("            -skip-type skip static type checking during compilation")
+	fmt.Println("            -skip-type skip static type checking before compilation")
 	fmt.Println("    help               Print this help to stdout")
 }
 

@@ -37,3 +37,5 @@ mem N 2 - + 1 .
     drop drop
     1 +
 end
+
+drop
