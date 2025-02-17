@@ -267,7 +267,7 @@ func lexFile(filePath string, expanded int) []model.Token {
 
     scanner := bufio.NewScanner(file)
 
-    row := 0
+    row := 1
 
     for scanner.Scan() {
         text := scanner.Text()

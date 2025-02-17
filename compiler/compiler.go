@@ -24,6 +24,30 @@ type typedOperand struct {
     row      int
 }
 
+func (tO typedOperand) getTypedString() string {
+    typedString := fmt.Sprintf("%s:%d:", tO.filePath, tO.row)
+    switch tO.typ {
+    case TYPE_INT:
+        typedString += "INT"
+    case TYPE_PTR:
+        typedString += "PTR"
+    case TYPE_BOOL:
+        typedString += "BOOL"
+    default:
+    }
+    return typedString
+}
+
+func getStringFromOperands(typedOperands ...typedOperand) string {
+    stringFromOperands := fmt.Sprintf("[ ")
+    for _, tO := range typedOperands {
+        stringFromOperands += tO.getTypedString()
+        stringFromOperands += " "
+    }
+    stringFromOperands += "]"
+    return stringFromOperands
+}
+
 func stackEqual(s *util.Stack[typedOperand], r *util.Stack[typedOperand]) bool {
     i := 0
     if s.Size() != r.Size() {
@@ -68,7 +92,8 @@ func TypeCheckingProgram(program []model.Operation) {
             } else if b.typ == TYPE_PTR && a.typ == TYPE_INT {
                 stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for +")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for +\n" + foundArguments)
             }
         case constants.OP_MINUS:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "-")
@@ -82,18 +107,17 @@ func TypeCheckingProgram(program []model.Operation) {
             } else if a.typ == TYPE_INT && b.typ == TYPE_PTR {
                 stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for -")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for -\n" + foundArguments)
             }
         case constants.OP_MUL:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "*")
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for *")
-            }
-            if b.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for *")
+            if a.typ != TYPE_INT || b.typ != TYPE_INT {
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for *\n" + foundArguments)
             }
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_MOD:
@@ -101,11 +125,9 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for divmod")
-            }
-            if b.typ != TYPE_INT {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for divmod")
+            if a.typ != TYPE_INT || b.typ != TYPE_INT {
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for divmod\n" + foundArguments)
             }
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
@@ -120,7 +142,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
                 stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for =")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for =\n" + foundArguments)
             }
         case constants.OP_NE:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "!=")
@@ -130,14 +153,16 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
                 stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for !=")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for !=\n" + foundArguments)
             }
         case constants.OP_IF:
             util.CheckNumberOfArguments(stack.Size(), 1, op, "if")
             var a typedOperand
             a = stack.Pop()
             if a.typ != TYPE_BOOL {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for if")
+                foundArguments := getStringFromOperands(a)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for if\n" + foundArguments)
             }
             blockStacks.Push(blockStack {*stack, op.Op})
         case constants.OP_ELSE:
@@ -155,7 +180,8 @@ func TypeCheckingProgram(program []model.Operation) {
             var a typedOperand
             a = stack.Pop()
             if a.typ != TYPE_BOOL {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for do")
+                foundArguments := getStringFromOperands(a)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for do\n" + foundArguments)
             }
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "do")
             var block blockStack
@@ -224,7 +250,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == TYPE_INT && b.typ == TYPE_INT {
                 stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for shr")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for shr\n" + foundArguments)
             }
         case constants.OP_SHL:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "shl")
@@ -234,7 +261,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == TYPE_INT && b.typ == TYPE_INT {
                 stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for shl")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for shl\n" + foundArguments)
             }
         case constants.OP_OR:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "|")
@@ -244,7 +272,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_BOOL) {
                 stack.Push(typedOperand{ a.typ, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for |")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for |\n" + foundArguments)
             }
         case constants.OP_AND:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "&")
@@ -254,7 +283,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_BOOL) {
                 stack.Push(typedOperand{ a.typ, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for &")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for &\n" + foundArguments)
             }
         case constants.OP_SWAP:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "swap")
@@ -280,7 +310,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
                 stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for <")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for <\n" + foundArguments)
             }
         case constants.OP_GT:
             util.CheckNumberOfArguments(stack.Size(), 2, op, ">")
@@ -290,7 +321,8 @@ func TypeCheckingProgram(program []model.Operation) {
             if a.typ == b.typ && (a.typ == TYPE_INT || a.typ == TYPE_PTR) {
                 stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
             } else {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for >")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for >\n" + foundArguments)
             }
         case constants.OP_MEM:
             stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
@@ -298,7 +330,8 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(stack.Size(), 1, op, ",")
             a := stack.Pop()
             if a.typ != TYPE_PTR {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for ,")
+                foundArguments := getStringFromOperands(a)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for ,\n" + foundArguments)
             }
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_STORE:
@@ -307,7 +340,8 @@ func TypeCheckingProgram(program []model.Operation) {
             a = stack.Pop()
             b = stack.Pop()
             if a.typ != TYPE_INT || b.typ != TYPE_PTR {
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .")
+                foundArguments := getStringFromOperands(a, b)
+                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .\n" + foundArguments)
             }
         case constants.OP_SYSCALL3:
             util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
@@ -320,7 +354,12 @@ func TypeCheckingProgram(program []model.Operation) {
         ip += 1
     }
     if stack.Size() > 0 {
-        util.TerminateWithError(program[len(program) - 1].FilePath, program[len(program) - 1].Row, "unhandled data on stack")
+        errorString := fmt.Sprintf("unhandled data on stack: [ ")
+        for stack.Size() > 0 {
+            errorString += stack.Pop().getTypedString()
+        }
+        errorString += " ]"
+        util.TerminateWithError(program[len(program) - 1].FilePath, program[len(program) - 1].Row, errorString)
     }
 }
 

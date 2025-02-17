@@ -21,6 +21,6 @@ func WarnWithError(filePath string, row int, err string) {
 func CheckNumberOfArguments(stkCnt int, argCnt int, op model.Operation, opString string) {
     if stkCnt < argCnt {
         errorString := fmt.Sprintf("operation %s requires %d arguments but found %d\n", opString, argCnt, stkCnt)
-        WarnWithError(op.FilePath, op.Row, errorString)
+        TerminateWithError(op.FilePath, op.Row, errorString)
     }
 }
