@@ -357,8 +357,9 @@ func TypeCheckingProgram(program []model.Operation) {
         errorString := fmt.Sprintf("unhandled data on stack: [ ")
         for stack.Size() > 0 {
             errorString += stack.Pop().getTypedString()
+            errorString += " "
         }
-        errorString += " ]"
+        errorString += "]"
         util.TerminateWithError(program[len(program) - 1].FilePath, program[len(program) - 1].Row, errorString)
     }
 }

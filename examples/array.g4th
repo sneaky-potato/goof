@@ -34,3 +34,4 @@ while 2dup > do
     dump
     1 +
 end
+drop drop
