@@ -343,6 +343,10 @@ func TypeCheckingProgram(program []model.Operation) {
                 foundArguments := getStringFromOperands(a, b)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .\n" + foundArguments)
             }
+        case constants.OP_SYSCALL1:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "syscall1")
+            _ = stack.Pop()
+            _ = stack.Pop()
         case constants.OP_SYSCALL3:
             util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
             _ = stack.Pop()
@@ -427,7 +431,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("_start:\n")
 
     ip := 0
-    if constants.COUNT_OPS != 36 {
+    if constants.COUNT_OPS != 37 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -634,6 +638,11 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             panic("not implemented")
         case constants.OP_ARGV:
             panic("not implemented")
+        case constants.OP_SYSCALL1:
+            out.WriteString("    ;; -- syscall --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rdi\n")
+            out.WriteString("    syscall\n")
         case constants.OP_SYSCALL3:
             out.WriteString("    ;; -- syscall --\n")
             out.WriteString("    pop rax\n")
