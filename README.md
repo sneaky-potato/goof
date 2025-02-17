@@ -1,8 +1,8 @@
-# G4th
+# G00F
 
 > I wanted to talk to the computer using my own language
 
-goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go.
+goof or goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go.
 
 I made this contraption to learn more about compilers and computer architecture.
 I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
@@ -24,10 +24,10 @@ The following flowchart summarizes the workflow
 
 ```mermaid
 flowchart LR
-    A[test.g4th]-- main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
+    A[test.goof]-- main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
 ```
 
-For compiling the program written in `test.g4th` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
+For compiling the program written in `test.goof` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
 ```shell
 go run main.go com ./test.porth
 ./output
@@ -47,13 +47,15 @@ $ ldd output
 - [x] Native
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
+- [ ] Deploy a static site with an online playground for compiling on the go
+    - [ ] investigate and use goroutine for this
 - [ ] Include directories and add support for finding included files
 - [ ] Self-hosted compiler
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
 ## BUGS
-- [x] Type checking does not work correctly with control flow, check PR [here](https://github.com/sneaky-potato/g4th/pull/4)
+- [x] Type checking does not work correctly with control flow, check PR [here](https://github.com/sneaky-potato/goof/pull/4)
 
 ## Language Reference
 
@@ -76,7 +78,7 @@ The code above pushes 10 and 1 to the stack, pop them, sums them up and then pus
 A string is a sequence of characters sandwiched between double quotes (").
 
 ```pascal
-include "std.g4th"
+include "std.goof"
 
 "Hello World\n" write
 ```
@@ -160,4 +162,4 @@ for i in range(n):
 <perform the syscall>
 ```
 
-- `include` - includes the tokens from a g4th file into the current file.
+- `include` - includes the tokens from a goof file into the current file.

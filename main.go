@@ -35,7 +35,6 @@ func usage(program string) {
 	fmt.Println("        SUBOPTIONS:")
 	fmt.Println("            -r         run the program after successful compilation")
 	fmt.Println("            -skip-type skip static type checking before compilation")
-	fmt.Println("    help               Print this help to stdout")
 }
 
 func main() {

@@ -12,10 +12,10 @@ declare -a TESTCASES
 declare -a TESTCASESOUT
 
 for test_file in $(ls "${TESTPATH}"); do
-    if [[ $test_file == *.g4th ]]
+    if [[ $test_file == *.goof ]]
     then
         TESTCASES+=("$test_file")
-    elif [[ $test_file == *.g4th.txt ]]
+    elif [[ $test_file == *.goof.txt ]]
     then
         TESTCASESOUT+=("$test_file")
     fi

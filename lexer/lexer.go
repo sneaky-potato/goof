@@ -15,13 +15,17 @@ import (
 )
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 36 {
+    if constants.COUNT_OPS != 38 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
     if token.TokenWord.Type == constants.TOKEN_WORD {
         val, ok := constants.BUILTIN_WORDS[token.TokenWord.Value.(string)]
         if ok {
+            if val == constants.OP_HERE {
+                msg := token.FilePath + ":" + strconv.Itoa(token.Row)
+                return model.Operation{ constants.OP_PUSH_STR, msg, -1, token.FilePath, token.Row }
+            }
             return model.Operation{ val, 0, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
@@ -69,7 +73,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     var program []model.Operation
     macros := make(map[string][]model.Token)
 
-    if constants.COUNT_OPS != 36 {
+    if constants.COUNT_OPS != 38 {
         panic("Exhaustive handling inside crossreference")
     }
 
