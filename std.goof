@@ -75,5 +75,9 @@ macro puts
     stdout write
 end
 
+macro eputs
+    stderr write
+end
+
 // ptr -> *ptr++
 macro inc64 dup ,64 1 + .64 end

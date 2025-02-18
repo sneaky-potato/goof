@@ -20,6 +20,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
 
     var strs []string = []string{}
 
+    out.WriteString("BITS 64\n")
     out.WriteString("segment .text\n")
     out.WriteString("dump:\n")
     out.WriteString("    push    rbp\n")

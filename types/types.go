@@ -189,6 +189,7 @@ func TypeCheckingProgram(program []model.Operation) {
                 util.TerminateWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on data stack")
             }
             blockStacks.Push(blockStack {*stack, op.Op})
+            fmt.Printf("do pushing the following stack to expected: %+v\n", block.stack)
         case constants.OP_END:
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "end")
             var block blockStack
@@ -204,8 +205,10 @@ func TypeCheckingProgram(program []model.Operation) {
                     util.TerminateWithError(op.FilePath, op.Row, "both branches of if-block must produce same type arguments on data stack")
                 }
             } else if block.typ == constants.OP_DO {
+                fmt.Printf("end got the following stack %+v\n", block.stack)
                 isEqual := stackEqual(stack, &block.stack)
                 if !isEqual {
+                    fmt.Printf("expected: %+v\nactual: %+v\n", block.stack, *stack)
                     util.TerminateWithError(op.FilePath, op.Row, "do-end block cannot modify the types on data stack")
                 }
             } else {
@@ -283,11 +286,13 @@ func TypeCheckingProgram(program []model.Operation) {
             }
         case constants.OP_SWAP:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "swap")
+            fmt.Printf("stack before swap: %+v\n", *stack)
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
             stack.Push(a)
             stack.Push(b)
+            fmt.Printf("stack after swap: %+v\n", *stack)
         case constants.OP_ROT:
             util.CheckNumberOfArguments(stack.Size(), 3, op, "rot")
             var a, b, c typedOperand
