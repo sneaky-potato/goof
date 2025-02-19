@@ -168,6 +168,7 @@ func TypeCheckingProgram(program []model.Operation) {
                 foundArguments := getStringFromOperands(a)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for if\n" + foundArguments)
             }
+            // FIXME unexpected behavior: is stack is modified, blockStacks element also changes
             blockStacks.Push(blockStack {*stack, op.Op})
             fmt.Printf("if = %s\n", getStackString(*stack))
         case constants.OP_ELSE:
@@ -179,7 +180,7 @@ func TypeCheckingProgram(program []model.Operation) {
             }
             blockStacks.Push(blockStack {*stack, op.Op})
             fmt.Printf("else = %s\n", getStackString(*stack))
-            stack.Assign(&block.stack)
+            stack.Assign(block.stack)
         case constants.OP_WHILE:
             blockStacks.Push(blockStack {*stack, op.Op})
             fmt.Printf("while = %s\n", getStackString(*stack))
@@ -386,6 +387,7 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
         default:
         }
+        fmt.Printf("op: %+v\nblock: %+v\nstack: %+v\n", op, blockStacks, *stack)
         ip += 1
     }
     if stack.Size() > 0 {

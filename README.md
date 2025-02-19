@@ -57,6 +57,7 @@ $ ldd output
 
 ## BUGS
 - [x] Type checking does not work correctly with control flow, check PR [here](https://github.com/sneaky-potato/goof/pull/4)
+- [ ] Shallow copy bug in block stack push marked here: types/types.go:172
 
 ## Language Reference
 

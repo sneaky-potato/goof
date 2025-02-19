@@ -4,6 +4,7 @@ type Stack[T any] struct {
     items []T
 }
 
+// FIXME it does not perform a deep copy
 func (s *Stack[T]) Push(item T) {
     s.items = append(s.items, item)
 }
@@ -28,6 +29,9 @@ func (s *Stack[T]) Peek(idx int) T {
     return s.items[idx]
 }
 
-func (s *Stack[T]) Assign(r *Stack[T]) {
-    s.items = r.items
+func (s *Stack[T]) Assign(r Stack[T]) {
+    s.items = make([]T, len(r.items))
+    for i, item := range r.items {
+        s.items[i] = item
+    }
 }
