@@ -198,6 +198,7 @@ func TypeCheckingProgram(program []model.Operation) {
             }
             isEqual := stackEqual(*stack, block.stack)
             if !isEqual {
+                fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                 util.TerminateWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on data stack")
             }
             copyStack := stack.Copy()
@@ -209,16 +210,19 @@ func TypeCheckingProgram(program []model.Operation) {
             if block.typ == constants.OP_IF {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
+                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                     util.TerminateWithError(op.FilePath, op.Row, "else-less if cannot modify the types on data stack")
                 }
             } else if block.typ == constants.OP_ELSE {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
+                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                     util.TerminateWithError(op.FilePath, op.Row, "both branches of if-block must produce same type arguments on data stack")
                 }
             } else if block.typ == constants.OP_DO {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
+                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                     util.TerminateWithError(op.FilePath, op.Row, "do-end block cannot modify the types on data stack")
                 }
             } else {
