@@ -168,22 +168,20 @@ func TypeCheckingProgram(program []model.Operation) {
                 foundArguments := getStringFromOperands(a)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for if\n" + foundArguments)
             }
-            // FIXME unexpected behavior: is stack is modified, blockStacks element also changes
-            blockStacks.Push(blockStack {*stack, op.Op})
-            fmt.Printf("if = %s\n", getStackString(*stack))
+            copyStack := stack.Copy()
+            blockStacks.Push(blockStack {*copyStack, op.Op})
         case constants.OP_ELSE:
             var block blockStack
             block = blockStacks.Pop()
-            fmt.Printf("else popped = %s\n", getStackString(block.stack))
             if block.typ != constants.OP_IF {
                 panic("else can only be used after if")
             }
-            blockStacks.Push(blockStack {*stack, op.Op})
-            fmt.Printf("else = %s\n", getStackString(*stack))
+            copyStack := stack.Copy()
+            blockStacks.Push(blockStack {*copyStack, op.Op})
             stack.Assign(block.stack)
         case constants.OP_WHILE:
-            blockStacks.Push(blockStack {*stack, op.Op})
-            fmt.Printf("while = %s\n", getStackString(*stack))
+            copyStack := stack.Copy()
+            blockStacks.Push(blockStack {*copyStack, op.Op})
         case constants.OP_DO:
             util.CheckNumberOfArguments(stack.Size(), 1, op, "do")
             var a typedOperand
@@ -195,7 +193,6 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "do")
             var block blockStack
             block = blockStacks.Pop()
-            fmt.Printf("do popped = %s\n", getStackString(block.stack))
             if block.typ != constants.OP_WHILE {
                 panic("do must be used after while")
             }
@@ -203,15 +200,12 @@ func TypeCheckingProgram(program []model.Operation) {
             if !isEqual {
                 util.TerminateWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on data stack")
             }
-            blockStacks.Push(blockStack {*stack, op.Op})
-            fmt.Printf("do = %s\n", getStackString(*stack))
-            fmt.Printf("DO: %+v\n", blockStacks)
+            copyStack := stack.Copy()
+            blockStacks.Push(blockStack {*copyStack, op.Op})
         case constants.OP_END:
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "end")
-            fmt.Printf("END: %+v\n", blockStacks)
             var block blockStack
             block = blockStacks.Pop()
-            fmt.Printf("end popped = %s\n", getStackString(block.stack))
             if block.typ == constants.OP_IF {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
@@ -225,7 +219,6 @@ func TypeCheckingProgram(program []model.Operation) {
             } else if block.typ == constants.OP_DO {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
-                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                     util.TerminateWithError(op.FilePath, op.Row, "do-end block cannot modify the types on data stack")
                 }
             } else {
@@ -387,7 +380,6 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
         default:
         }
-        fmt.Printf("op: %+v\nblock: %+v\nstack: %+v\n", op, blockStacks, *stack)
         ip += 1
     }
     if stack.Size() > 0 {

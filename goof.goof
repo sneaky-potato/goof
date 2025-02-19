@@ -33,8 +33,6 @@ macro putd
    end
 end
 
-1 putd
-
 // type operand
 macro push-op
     ops-count ,64 sizeof(Op) * ops +
