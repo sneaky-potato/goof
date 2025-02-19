@@ -26,4 +26,18 @@ macro putd
     end
 end
 
-"Hello world " puts 417 putd "\n" puts
+macro loop
+    putd-buffer PUTD_BUFFER_CAP +
+    // n ptr
+    while over 0 > do
+        swap
+        10 divmod
+        // ptr n/10 n%10
+        48 + drop swap 
+    end
+    dup // n ptr len
+    putd-buffer PUTD_BUFFER_CAP + swap - swap puts
+end
+
+"Hello world " puts 417 putd
+// putd "\n" puts

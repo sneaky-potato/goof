@@ -20,7 +20,7 @@ type typedOperand struct {
     row      int
 }
 
-func stackEqual(s *util.Stack[typedOperand], r *util.Stack[typedOperand]) bool {
+func stackEqual(s util.Stack[typedOperand], r util.Stack[typedOperand]) bool {
     i := 0
     if s.Size() != r.Size() {
         return false
@@ -37,6 +37,15 @@ func stackEqual(s *util.Stack[typedOperand], r *util.Stack[typedOperand]) bool {
 type blockStack struct {
     stack util.Stack[typedOperand]
     typ   int
+}
+
+func getStackString(stack util.Stack[typedOperand]) string {
+    stackString := fmt.Sprintf("[ ")
+    for stack.Size() > 0 {
+        stackString += fmt.Sprintf("%s ", stack.Pop().getTypedString())
+    }
+    stackString += fmt.Sprintf(" ]")
+    return stackString
 }
 
 func (tO typedOperand) getTypedString() string {
@@ -160,16 +169,20 @@ func TypeCheckingProgram(program []model.Operation) {
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for if\n" + foundArguments)
             }
             blockStacks.Push(blockStack {*stack, op.Op})
+            fmt.Printf("if = %s\n", getStackString(*stack))
         case constants.OP_ELSE:
             var block blockStack
             block = blockStacks.Pop()
+            fmt.Printf("else popped = %s\n", getStackString(block.stack))
             if block.typ != constants.OP_IF {
                 panic("else can only be used after if")
             }
             blockStacks.Push(blockStack {*stack, op.Op})
+            fmt.Printf("else = %s\n", getStackString(*stack))
             stack.Assign(&block.stack)
         case constants.OP_WHILE:
             blockStacks.Push(blockStack {*stack, op.Op})
+            fmt.Printf("while = %s\n", getStackString(*stack))
         case constants.OP_DO:
             util.CheckNumberOfArguments(stack.Size(), 1, op, "do")
             var a typedOperand
@@ -181,34 +194,37 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "do")
             var block blockStack
             block = blockStacks.Pop()
+            fmt.Printf("do popped = %s\n", getStackString(block.stack))
             if block.typ != constants.OP_WHILE {
                 panic("do must be used after while")
             }
-            isEqual := stackEqual(stack, &block.stack)
+            isEqual := stackEqual(*stack, block.stack)
             if !isEqual {
                 util.TerminateWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on data stack")
             }
             blockStacks.Push(blockStack {*stack, op.Op})
-            fmt.Printf("do pushing the following stack to expected: %+v\n", block.stack)
+            fmt.Printf("do = %s\n", getStackString(*stack))
+            fmt.Printf("DO: %+v\n", blockStacks)
         case constants.OP_END:
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "end")
+            fmt.Printf("END: %+v\n", blockStacks)
             var block blockStack
             block = blockStacks.Pop()
+            fmt.Printf("end popped = %s\n", getStackString(block.stack))
             if block.typ == constants.OP_IF {
-                isEqual := stackEqual(stack, &block.stack)
+                isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
                     util.TerminateWithError(op.FilePath, op.Row, "else-less if cannot modify the types on data stack")
                 }
             } else if block.typ == constants.OP_ELSE {
-                isEqual := stackEqual(stack, &block.stack)
+                isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
                     util.TerminateWithError(op.FilePath, op.Row, "both branches of if-block must produce same type arguments on data stack")
                 }
             } else if block.typ == constants.OP_DO {
-                fmt.Printf("end got the following stack %+v\n", block.stack)
-                isEqual := stackEqual(stack, &block.stack)
+                isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
-                    fmt.Printf("expected: %+v\nactual: %+v\n", block.stack, *stack)
+                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                     util.TerminateWithError(op.FilePath, op.Row, "do-end block cannot modify the types on data stack")
                 }
             } else {
@@ -286,13 +302,11 @@ func TypeCheckingProgram(program []model.Operation) {
             }
         case constants.OP_SWAP:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "swap")
-            fmt.Printf("stack before swap: %+v\n", *stack)
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
             stack.Push(a)
             stack.Push(b)
-            fmt.Printf("stack after swap: %+v\n", *stack)
         case constants.OP_ROT:
             util.CheckNumberOfArguments(stack.Size(), 3, op, "rot")
             var a, b, c typedOperand
