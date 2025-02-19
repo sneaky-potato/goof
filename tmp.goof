@@ -1,9 +1,10 @@
 include "std.goof"
 
 macro PUTD_BUFFER_CAP 32 end
+
 macro putd-buffer mem end
 
-//10 -> "10"
+// 10 -> "10"
 macro putd
     dup 0 = if
         "0" puts
@@ -14,17 +15,16 @@ macro putd
             1 - dup rot rot
             // ptr ptr n
             10 divmod
-            // ptr ptr n/10 n%10
-            rot rot
-            // ptr n/10 n%10 ptr
-            swap
+            // ptr ptr n%10 n/10
+            rot rot swap
             // ptr n/10 ptr n%10
-            48 + . swap 
+            48 + . swap
         end
         dup // n ptr len
         putd-buffer PUTD_BUFFER_CAP + swap - swap puts
-    end
+   end
+   drop
 end
 
-"Hello world " puts 417 putd drop
+"Hello world " puts 417 putd
 // putd "\n" puts
