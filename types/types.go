@@ -372,6 +372,22 @@ func TypeCheckingProgram(program []model.Operation) {
                 foundArguments := getStringFromOperands(a, b)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .64\n" + foundArguments)
             }
+        case constants.OP_CAST_PTR:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "cast(ptr)")
+            stack.Pop()
+            stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+        case constants.OP_CAST_BOOL:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "cast(bool)")
+            stack.Pop()
+            stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+        case constants.OP_CAST_INT:
+            util.CheckNumberOfArguments(stack.Size(), 1, op, "cast(int)")
+            stack.Pop()
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_ARGC:
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_ARGV:
+            stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
         case constants.OP_SYSCALL1:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "syscall1")
             _ = stack.Pop()

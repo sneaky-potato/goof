@@ -41,10 +41,8 @@ end
 // ptr -> strlen(ptr)
 // string pointed to by ptr must be null terminated
 macro strlen
-    dup 
-    while dup , 0 != do
-        1 +
-    end
+    dup
+    while dup , 0 != do 1 + end
     swap -
 end
 

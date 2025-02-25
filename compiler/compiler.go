@@ -73,9 +73,10 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
 
     out.WriteString("global _start\n")
     out.WriteString("_start:\n")
+    out.WriteString("    mov [args_ptr], rsp\n")
 
     ip := 0
-    if constants.COUNT_OPS != 38 {
+    if constants.COUNT_OPS != 41 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -85,7 +86,8 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
         switch operation.Op {
         case constants.OP_PUSH_INT:
             out.WriteString(fmt.Sprintf("    ;; -- push int %d --\n", operation.Value))
-            out.WriteString(fmt.Sprintf("    push %d\n", operation.Value))
+            out.WriteString(fmt.Sprintf("    mov rax, %d\n", operation.Value))
+            out.WriteString(fmt.Sprintf("    push rax\n"))
         case constants.OP_PUSH_STR:
             out.WriteString(fmt.Sprintf("    ;; -- push str %s --\n", operation.Value))
             val, _ := operation.Value.(string)
@@ -268,20 +270,26 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    pop rax\n")
             out.WriteString("    mov [rax], bl\n")
         case constants.OP_LOAD64:
-            out.WriteString("    ;; -- load --\n")
+            out.WriteString("    ;; -- load64 --\n")
             out.WriteString("    pop rax\n")
             out.WriteString("    xor rbx, rbx\n")
             out.WriteString("    mov rbx, [rax]\n")
             out.WriteString("    push rbx\n")
         case constants.OP_STORE64:
-            out.WriteString("    ;; -- store --\n")
+            out.WriteString("    ;; -- store64 --\n")
             out.WriteString("    pop rbx\n")
             out.WriteString("    pop rax\n")
             out.WriteString("    mov [rax], rbx\n")
         case constants.OP_ARGC:
-            panic("not implemented")
+            out.WriteString("    ;; -- argc --\n")
+            out.WriteString("    mov rax, [args_ptr]\n")
+            out.WriteString("    mov rax, [rax]\n")
+            out.WriteString("    push rax\n")
         case constants.OP_ARGV:
-            panic("not implemented")
+            out.WriteString("    ;; -- argv --\n")
+            out.WriteString("    mov rax, [args_ptr]\n")
+            out.WriteString("    add rax, 8\n")
+            out.WriteString("    push rax\n")
         case constants.OP_SYSCALL1:
             out.WriteString("    ;; -- syscall --\n")
             out.WriteString("    pop rax\n")
@@ -315,5 +323,6 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
         out.WriteString("\n")
     }
     out.WriteString("segment .bss\n")
+    out.WriteString("args_ptr: resq 1\n")
     out.WriteString(fmt.Sprintf("mem resb %d\n", constants.MEM_CAPACITY))
 }
