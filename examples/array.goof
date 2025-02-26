@@ -12,7 +12,7 @@ dup
 0 
 // cnt cnt i
 while 2dup > do
-    dup mem +
+    dup 8 * mem +
     // cnt cnt i mem+i
     BUFFER_CAP over stdin read drop
     // cnt i mem+i
@@ -28,7 +28,7 @@ drop drop
 0 
 // cnt i
 while 2dup > do
-    dup
+    dup 8 *
     mem + ,64
     // cnt i mem[i]
     dump

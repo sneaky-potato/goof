@@ -59,7 +59,6 @@ $ ldd output
 
 ## BUGS
 - [ ] dump operation only prints unsigned integers
-- [ ] load64 incorrectly loads values from memory, run [array.goof](./examples/array.goof)
 
 ## Language Reference
 
@@ -84,7 +83,7 @@ A string is a sequence of characters sandwiched between double quotes (").
 ```pascal
 include "std.goof"
 
-"Hello World\n" write
+"Hello World\n" stdout write
 ```
 
 When the compiler encounters a string the following happens:

@@ -12,10 +12,10 @@ dup
 0 
 // sum cnt cnt i
 while 2dup > do
-    dup mem +
+    dup 8 * mem +
     BUFFER_CAP over stdin read drop
     // sum cnt cnt i mem+i
-    dup stoi .
+    dup stoi .64
     // cnt i
     1 +
 end
@@ -30,8 +30,8 @@ while 2dup > do
     rot rot
     // cnt i sum
     swap // cnt sum i
-    dup
-    mem + ,
+    dup 8 *
+    mem + ,64
     // cnt sum i mem[i]
     rot rot
     // cnt i mem[i] sum

@@ -57,7 +57,7 @@ macro stoi
     0
     // ptr val
     over ,
-    while dup 10 != do
+    while dup 58 < over 47 > & do
         // ptr val *ptr
         48 -
         // ptr val *ptr-'0'
