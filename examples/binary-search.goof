@@ -28,7 +28,7 @@ mem dup 10 .
         // mem[8] = 'Y'; mem[9] = '\n'
         mem 8 + 89 .
         mem 9 + 10 .
-        2 mem 8 + 1 1 syscall3
+        2 mem 8 + 1 1 syscall3 drop
         // print mid index
         1 - dump
         // exit

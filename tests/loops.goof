@@ -3,4 +3,4 @@
     1 -
 end
 drop
-"end of while loop\n" 1 1 syscall3
+"end of while loop\n" 1 1 syscall3 drop

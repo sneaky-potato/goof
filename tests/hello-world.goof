@@ -12,4 +12,4 @@ mem dup 72 .
 1 + dup 100 .
 1 + dup 10 .
 1 + 
-mem - mem 1 1 syscall3
+mem - mem 1 1 syscall3 drop

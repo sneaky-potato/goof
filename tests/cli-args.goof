@@ -5,8 +5,8 @@ argv
 argc
 while dup 0 > do
     over ,64 (ptr) dup strlen
-    swap stdout write
-    "\n" stdout write
+    swap stdout write drop
+    "\n" stdout write drop
     1 - swap 8 + swap
 end
 drop drop

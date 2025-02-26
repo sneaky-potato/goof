@@ -295,6 +295,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    pop rax\n")
             out.WriteString("    pop rdi\n")
             out.WriteString("    syscall\n")
+            out.WriteString("    push rax\n")
         case constants.OP_SYSCALL3:
             out.WriteString("    ;; -- syscall --\n")
             out.WriteString("    pop rax\n")
@@ -302,6 +303,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    pop rsi\n")
             out.WriteString("    pop rdx\n")
             out.WriteString("    syscall\n")
+            out.WriteString("    push rax\n")
         }
 
         ip += 1

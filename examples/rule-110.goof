@@ -12,13 +12,13 @@ mem N 2 - + 1 .
         else
             mem N + ' ' .
         end
-        1 mem N + write
+        1 mem N + write drop
         1 +
     end
     // pop the inner loop counter
     drop
     mem N + 10 .
-    1 mem N + write
+    1 mem N + write drop
 
     // pattern
     mem , 1 shl

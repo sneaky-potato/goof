@@ -99,7 +99,7 @@ macro compile-ops
         dup ,64 OP_PUSH_INT = if
             "    ;; -- push int " puts dup 8 + ,64 putd " --\n" puts
             "    mov rax, " puts dup 8 + ,64 putd "\n" puts
-            "    push %d\n" puts
+            "    push rax\n" puts
         else dup ,64 OP_PLUS = if
             "    ;; -- plus --\n" puts
             "    pop rax\n" puts
