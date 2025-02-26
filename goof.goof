@@ -1,26 +1,132 @@
 include "std.goof"
 
+macro PUTD_BUFFER_CAP 32 end
+macro MEM_CAPACITY 640000 end
+
 macro OP_PUSH_INT 0 end
 macro OP_PLUS     1 end
 macro OP_DUMP     2 end
 
-macro ops-count mem end
+macro putd-buffer mem end
+macro ops-count putd-buffer PUTD_BUFFER_CAP + end
 macro ops ops-count 8 + end
 macro sizeof(Op) 16 end
+
+// 10 -> "10"
+macro putd
+    dup 0 = if
+        "0" puts
+    else
+        putd-buffer PUTD_BUFFER_CAP +
+        // n ptr
+        while over 0 > do
+            1 - dup rot rot
+            // ptr ptr n
+            10 divmod
+            // ptr ptr n%10 n/10
+            rot rot swap
+            // ptr n/10 ptr n%10
+            48 + . swap
+        end
+        dup // n ptr len
+        putd-buffer PUTD_BUFFER_CAP + swap - swap puts
+   end
+   drop
+end
 
 // type operand
 macro push-op
     ops-count ,64 sizeof(Op) * ops +
-    dup 8 + rot rot swap .64 .64
-    here puts ": TODO: push-ops is not implemented yet\n" puts 1 exit
+    dup 8 + rot rot .64 swap .64
+    ops-count inc64
 end
 
 macro compile-ops
-    here puts ": TODO: compile-ops is not implemented yet\n" puts 1 exit
+    "BITS 64\n" puts
+    "segment .text\n" puts
+    "dump:\n" puts
+    "    push    rbp\n" puts
+    "    mov     rbp, rsp\n" puts
+    "    sub     rsp, 64\n" puts
+    "    mov     QWORD [rbp-56], rdi\n" puts
+    "    mov     QWORD [rbp-8], 1\n" puts
+    "    mov     eax, 32\n" puts
+    "    sub     rax, QWORD [rbp-8]\n" puts
+    "    mov     BYTE [rbp-48+rax], 10\n" puts
+    ".L2:\n" puts
+    "    mov     rcx, QWORD [rbp-56]\n" puts
+    "    mov     rdx, -3689348814741910323\n" puts
+    "    mov     rax, rcx\n" puts
+    "    mul     rdx\n" puts
+    "    shr     rdx, 3\n" puts
+    "    mov     rax, rdx\n" puts
+    "    sal     rax, 2\n" puts
+    "    add     rax, rdx\n" puts
+    "    add     rax, rax\n" puts
+    "    sub     rcx, rax\n" puts
+    "    mov     rdx, rcx\n" puts
+    "    mov     eax, edx\n" puts
+    "    lea     edx, [rax+48]\n" puts
+    "    mov     eax, 31\n" puts
+    "    sub     rax, QWORD [rbp-8]\n" puts
+    "    mov     BYTE [rbp-48+rax], dl\n" puts
+    "    add     QWORD [rbp-8], 1\n" puts
+    "    mov     rax, QWORD [rbp-56]\n" puts
+    "    mov     rdx, -3689348814741910323\n" puts
+    "    mul     rdx\n" puts
+    "    mov     rax, rdx\n" puts
+    "    shr     rax, 3\n" puts
+    "    mov     QWORD [rbp-56], rax\n" puts
+    "    cmp     QWORD [rbp-56], 0\n" puts
+    "    jne     .L2\n" puts
+    "    mov     eax, 32\n" puts
+    "    sub     rax, QWORD [rbp-8]\n" puts
+    "    lea     rdx, [rbp-48]\n" puts
+    "    lea     rcx, [rdx+rax]\n" puts
+    "    mov     rax, QWORD [rbp-8]\n" puts
+    "    mov     rdx, rax\n" puts
+    "    mov     rsi, rcx\n" puts
+    "    mov     edi, 1\n" puts
+    "    mov     rax, 1\n" puts
+    "    syscall\n" puts
+    "    nop\n" puts
+    "    leave\n" puts
+    "    ret\n" puts
+    "global _start\n" puts
+    "_start:\n" puts
+    0 while dup ops-count ,64 < do
+        dup sizeof(Op) * ops +
+        dup ,64 OP_PUSH_INT = if
+            "    ;; -- push int " puts dup 8 + ,64 putd " --\n" puts
+            "    mov rax, " puts dup 8 + ,64 putd "\n" puts
+            "    push rax\n" puts
+        else dup ,64 OP_PLUS = if
+            "    ;; -- plus --\n" puts
+            "    pop rax\n" puts
+            "    pop rbx\n" puts
+            "    add rax, rbx\n" puts
+            "    push rax\n" puts
+        else dup ,64 OP_DUMP = if
+            "    ;; -- dump --\n" puts
+            "    pop rdi\n" puts
+            "    call dump\n" puts
+        else here eputs ": unreachable\n" eputs 1 exit
+        end end end
+        drop
+        1 +
+    end
+    drop
 end
 
 macro dump-ops
-    here puts ": TODO: dump-ops is not implemented yet\n" puts 1 exit
+    0 while dup ops-count ,64 < do
+        dup sizeof(Op) * ops +
+        "type:    " puts dup ,64 dump
+        "operand: " puts 8 + ,64 dump
+        "-----------\n" puts
+        1 +
+    end
+    drop
 end
 
 OP_PUSH_INT 34 push-op

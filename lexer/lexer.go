@@ -15,7 +15,7 @@ import (
 )
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 38 {
+    if constants.COUNT_OPS != 41 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -32,7 +32,7 @@ func ParseTokenAsOp(token model.Token) model.Operation {
             util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_INT {
-        val, ok := token.TokenWord.Value.(int)
+        val, ok := token.TokenWord.Value.(int64)
         if ok {
             return model.Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
         } else {
@@ -73,7 +73,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     var program []model.Operation
     macros := make(map[string][]model.Token)
 
-    if constants.COUNT_OPS != 38 {
+    if constants.COUNT_OPS != 41 {
         panic("Exhaustive handling inside crossreference")
     }
 
@@ -219,9 +219,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
 }
 
 func lexWord(filePath string, row int, tokenWord string) model.Word {
-    var intValue int; var err error
-
-    if intValue, err = strconv.Atoi(tokenWord); err == nil {
+    if intValue, err := strconv.ParseInt(tokenWord, 10, 64); err == nil {
         return model.Word{ constants.TOKEN_INT, intValue, 0 }
     }
     n := len(tokenWord)

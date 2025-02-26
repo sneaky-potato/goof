@@ -1,9 +1,9 @@
 package model
 
 type Operation struct {
-    Op    int
-    Value interface{}
-    Jump  int
+    Op        int
+    Value     interface{}
+    Jump      int
     FilePath  string
     Row       int
 }

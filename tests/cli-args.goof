@@ -1,10 +1,12 @@
 include "std.goof"
 
 // prints the command line arguments
+argv
+argc
 while dup 0 > do
-    swap dup strlen swap
-    stdout write
-    "\n" stdout write
-    1 -
+    over ,64 (ptr) dup strlen
+    swap stdout write drop
+    "\n" stdout write drop
+    1 - swap 8 + swap
 end
-
+drop drop

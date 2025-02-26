@@ -28,6 +28,19 @@ func (s *Stack[T]) Peek(idx int) T {
     return s.items[idx]
 }
 
-func (s *Stack[T]) Assign(r *Stack[T]) {
-    s.items = r.items
+func (s *Stack[T]) Assign(r Stack[T]) {
+    s.items = make([]T, len(r.items))
+    for i, item := range r.items {
+        s.items[i] = item
+    }
+}
+
+func (s *Stack[T]) Copy() *Stack[T] {
+    copyStack := new(Stack[T])
+    i := 0
+    for i < len(s.items) {
+        copyStack.Push(s.items[i])
+        i += 1
+    }
+    return copyStack
 }

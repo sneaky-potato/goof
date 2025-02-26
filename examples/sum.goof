@@ -2,9 +2,9 @@ include "std.goof"
 
 macro BUFFER_CAP 256 end
 
-"Enter number of elements:\n" stdout write
-BUFFER_CAP mem stdin read
-"Enter elements\n" stdout write
+"Enter number of elements:\n" stdout write drop
+BUFFER_CAP mem stdin read drop
+"Enter elements\n" stdout write drop
 
 0 // sum
 mem stoi // cnt
@@ -13,7 +13,7 @@ dup
 // sum cnt cnt i
 while 2dup > do
     dup mem +
-    BUFFER_CAP over stdin read
+    BUFFER_CAP over stdin read drop
     // sum cnt cnt i mem+i
     dup stoi .
     // cnt i
@@ -22,7 +22,7 @@ end
 
 drop drop
 
-"Sum: " stdout write
+"Sum: " stdout write drop
 
 0
 // sum cnt i

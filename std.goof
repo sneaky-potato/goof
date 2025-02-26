@@ -5,10 +5,15 @@ macro stderr 2 end
 macro SYS_READ 0 end
 macro SYS_WRITE 1 end
 macro SYS_EXIT 60 end
+macro SYS_OPENAT 257 end
+
+macro O_RDONLY 0 end
+macro AT_FDCWD -100 end
 
 macro write SYS_WRITE syscall3 end
 macro read SYS_READ syscall3 end
-macro exit SYS_EXIT syscall1 end
+macro exit SYS_EXIT syscall1 drop end
+macro openat SYS_OPENAT syscall3 end
 
 macro / divmod drop end
 macro % divmod swap drop end
@@ -41,10 +46,8 @@ end
 // ptr -> strlen(ptr)
 // string pointed to by ptr must be null terminated
 macro strlen
-    dup 
-    while dup , 0 != do
-        1 +
-    end
+    dup
+    while dup , 0 != do 1 + end
     swap -
 end
 
@@ -72,5 +75,21 @@ macro stoi
 end
 
 macro puts
-    stdout write
+    stdout write drop
+end
+
+macro eputs
+    stderr write drop
+end
+
+// ptr -> *ptr++
+macro inc64 dup ,64 1 + .64 end
+
+// n -> &argv[n]
+macro nth_argv
+   8 * argv + ,64 (ptr)
+end
+
+// s1, s2 -> true / false
+macro streq
 end

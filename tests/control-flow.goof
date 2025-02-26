@@ -17,5 +17,7 @@ end
 end
 
 A B != if
-    "A != B\n" 1 1 syscall3
+    "A != B\n" 1 1 syscall3 drop
 end
+
+drop

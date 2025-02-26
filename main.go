@@ -8,8 +8,9 @@ import (
 	"os"
 	"os/exec"
 
+    "github.com/sneaky-potato/goof/lexer"
+    "github.com/sneaky-potato/goof/types"
 	"github.com/sneaky-potato/goof/compiler"
-	"github.com/sneaky-potato/goof/lexer"
 )
 
 func callCmd(cmd string, args ...string) {
@@ -59,7 +60,7 @@ func main() {
         program := lexer.LoadProgramFromFile(filePath)
 
         if *skipTypeChecking == false {
-            compiler.TypeCheckingProgram(program)
+            types.TypeCheckingProgram(program)
         }
 
         compiler.CompileToAsm("output.asm", program)

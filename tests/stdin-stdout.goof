@@ -2,9 +2,9 @@ include "std.goof"
 
 macro BUFFER_CAP 256 end
 
-"What is your name?\n" stdout write
-BUFFER_CAP mem stdin read
-"Hello " stdout write
-mem strlen mem stdout write
-"(._.)\n" stdout write
+"What is your name?\n" stdout write drop
+BUFFER_CAP mem stdin read drop
+"Hello " stdout write drop
+mem strlen mem stdout write drop
+"(._.)\n" stdout write drop
 
