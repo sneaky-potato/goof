@@ -52,12 +52,14 @@ $ ldd output
     - [ ] investigate and use goroutine for this
 - [ ] Include directories and add support for finding included files
 - [ ] Self-hosted compiler
+    - [x] support extracting command line args
+    - [ ] memory mapping file contents for self hosting parsing [ref](https://man7.org/linux/man-pages/man2/mmap.2.html)
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
 ## BUGS
-- [x] Type checking does not work correctly with control flow, check PR [here](https://github.com/sneaky-potato/goof/pull/4)
-- [x] Shallow copy bug in block stack push marked here: types/types.go:172
+- [ ] dump operation only prints unsigned integers
+- [ ] load64 incorrectly loads values from memory, run [array.goof](./examples/array.goof)
 
 ## Language Reference
 
