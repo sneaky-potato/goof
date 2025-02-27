@@ -19,9 +19,7 @@ while 2dup > do
     1 + // i++
 end
 
-drop drop
-
-cnt ,64
+drop
 0 
 // cnt i
 while 2dup > do
@@ -45,6 +43,7 @@ while 2dup > do
     drop drop
     1 + // i++
 end
+
 drop
 0
 // cnt i

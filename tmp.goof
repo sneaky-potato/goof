@@ -9,8 +9,14 @@ macro putd
     dup 0 = if
         "0" puts
     else
+        0 (bool)
+        over 0 < if
+            drop
+            -1 *
+            1 (bool)
+        end swap
         putd-buffer PUTD_BUFFER_CAP +
-        // n ptr
+        // flag n ptr
         while over 0 > do
             1 - dup rot rot
             // ptr ptr n
@@ -20,11 +26,16 @@ macro putd
             // ptr n/10 ptr n%10
             48 + . swap
         end
+        rot rot // n ptr flag
+        if
+            1 - dup 45 .
+        else end
+
         dup // n ptr len
         putd-buffer PUTD_BUFFER_CAP + swap - swap puts
    end
    drop
 end
 
-"Hello world " puts 417 putd
-// putd "\n" puts
+"-123" stoi putd
+drop

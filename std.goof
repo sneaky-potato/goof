@@ -54,8 +54,15 @@ end
 // ptr -> int(ptr)
 // string pointed to by ptr must be null terminated
 macro stoi
+    0 (bool)
+    over , 45 = if
+        drop
+        1 +
+        1 (bool)
+    end
+    swap
     0
-    // ptr val
+    // flag ptr val
     over ,
     while dup 58 < over 47 > & do
         // ptr val *ptr
@@ -72,6 +79,9 @@ macro stoi
         over ,
     end
     drop swap drop
+    swap if
+        -1 *
+    end
 end
 
 macro puts
