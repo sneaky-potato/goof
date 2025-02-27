@@ -1,0 +1,56 @@
+include "std.goof"
+
+macro BUFFER_CAP 256 end
+macro cnt mem end
+macro nums cnt 8 + end
+
+cnt
+BUFFER_CAP over stdin read drop // read cnt
+
+dup stoi     // mem[cnt] cnt
+.64
+cnt ,64      // cnt
+0 
+// cnt i
+while 2dup > do
+    dup 8 * nums +
+    BUFFER_CAP over stdin read drop
+    dup stoi .64
+    1 + // i++
+end
+
+drop drop
+
+cnt ,64
+0 
+// cnt i
+while 2dup > do
+    over 1 - // cnt - 1
+    0
+    // cnt-1 j
+    while 2dup > do
+        dup 8 * nums +     // &nums[j]
+        dup 8 +            // &nums[j] &nums[j+1]
+        ,64 swap ,64       // nums[j+1] nums[j]
+
+        < if               // if (nums[j] > nums[j+1])
+            dup 8 * nums + // &nums[j]
+            dup 8 + 2dup   // &nums[j] &nums[j+1] &nums[j] &nums[j+1]
+            ,64 swap ,64   // &nums[j] &nums[j+1] nums[j+1] nums[j]
+            rot rot        // &nums[j] nums[j+1] nums[j] &nums[j+1]
+            swap .64 .64
+        end
+        1 + // j++
+    end
+    drop drop
+    1 + // i++
+end
+drop
+0
+// cnt i
+while 2dup > do
+    dup 8 * nums + ,64
+    dump
+    1 +
+end
+drop drop
