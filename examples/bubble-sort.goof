@@ -1,8 +1,43 @@
 include "std.goof"
 
 macro BUFFER_CAP 256 end
-macro cnt mem end
+macro PUTD_BUFFER_CAP 32 end
+
+macro putd-buffer mem end
+macro cnt putd-buffer PUTD_BUFFER_CAP + end
 macro nums cnt 8 + end
+
+macro putd
+    dup 0 = if
+        "0" puts
+    else
+        0 (bool)
+        over 0 < if
+            drop
+            -1 *
+            1 (bool)
+        end swap
+        putd-buffer PUTD_BUFFER_CAP +
+        // flag n ptr
+        while over 0 > do
+            1 - dup rot rot
+            // ptr ptr n
+            10 divmod
+            // ptr ptr n%10 n/10
+            rot rot swap
+            // ptr n/10 ptr n%10
+            48 + . swap
+        end
+        rot rot // n ptr flag
+        if
+            1 - dup 45 .
+        else end
+        // n ptr
+        dup
+        putd-buffer PUTD_BUFFER_CAP + swap - swap puts
+   end
+   drop
+end
 
 cnt
 BUFFER_CAP over stdin read drop // read cnt
@@ -49,7 +84,7 @@ drop
 // cnt i
 while 2dup > do
     dup 8 * nums + ,64
-    dump
+    putd "\n" puts
     1 +
 end
 drop drop
