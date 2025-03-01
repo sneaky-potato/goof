@@ -30,12 +30,14 @@ macro putd
         if
             1 - dup 45 .
         else end
-
-        dup // n ptr len
-        putd-buffer PUTD_BUFFER_CAP + swap - swap puts
+        // n ptr
+        dup
+        putd-buffer PUTD_BUFFER_CAP + swap - dup dump swap puts
    end
    drop
 end
 
-"-123" stoi putd
+"-123\x00" stoi putd "\n" puts
+"123\x00" stoi putd "\n" puts
+drop
 drop
