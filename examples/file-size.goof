@@ -1,0 +1,35 @@
+include "std.goof"
+
+// memory layout
+macro fd mem end
+macro statbuf fd 8 + end
+
+argc 2 < if
+    "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs
+    "error: no input file provided\n" eputs
+    1 exit
+end
+
+O_RDONLY
+1 nth_argv
+AT_FDCWD
+openat
+
+dup 0 < if
+    "error: could not open file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+fd swap .64
+
+statbuf fd ,64 fstat
+
+dup 0 < if
+    "error: could not determine size of file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+statbuf stat.st_size ,64 dump
+drop
+
+fd ,64 close drop

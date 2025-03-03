@@ -393,6 +393,12 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
             _ = stack.Pop()
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_SYSCALL2:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "syscall2")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_SYSCALL3:
             util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
             _ = stack.Pop()
