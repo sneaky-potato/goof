@@ -29,3 +29,4 @@ while drop BUFFER_CAP buffer fd ,64 read dup 0 > do
     buffer stdout write
 end drop
 
+fd ,64 close drop
