@@ -47,13 +47,14 @@ $ ldd output
 - [x] Native
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
-- [x] Add editor config for vim and nvim for goof source files
+- [x] Add editor config for vim and nvim for goof source files, check [vim.goof](./editor/vim.goof)
 - [ ] Deploy a static site with an online playground for compiling on the go
     - [ ] investigate and use goroutine for this
-- [ ] Include directories and add support for finding included files
 - [ ] Self-hosted compiler
     - [x] support extracting command line args
-    - [ ] memory mapping file contents for self hosting parsing [ref](https://man7.org/linux/man-pages/man2/mmap.2.html)
+    - [x] memory mapping file contents for self hosting parsing [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-size.goof](./examples/file-size.goof)
+    - [ ] parse goof file into operations instead of hardcoding the program
+- [ ] Include directories and add support for finding included files
 - [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
@@ -62,7 +63,7 @@ $ ldd output
 
 ## Language Reference
 
-The language implements the following constructs
+The language implements the following *goofy* constructs
 
 ### Literals
 
@@ -74,7 +75,7 @@ Currently a sequence of digits which may optionally start with a dash (-) is int
 10 1 +
 ```
 
-The code above pushes 10 and 1 to the stack, pop them, sums them up and then pushes the result on top of stack.
+The code above pushes 10 and 1 to the stack, `+` operator pops them, sums them up and then pushes the result (11) on top of stack.
 
 #### String
 
@@ -102,7 +103,7 @@ When the compiler encounters a string the following happens:
 | `drop`  | `a b -- a`       | drops the top element of the stack                                                          |
 | `dump`  | `a b -- a`       | print the element on top of the stack in a free form to stdout and remove it from the stack |
 | `over`  | `a b -- a b a`   | copy the element below the top of the stack                                                 |
-| `rot`   | `a b c -- b c a` | rotate the top three stack elements                                                         |
+| `rot`   | `a b c -- c a b` | rotate the top three stack elements                                                         |
 
 #### Comparison
 
@@ -128,8 +129,8 @@ When the compiler encounters a string the following happens:
 | ---   | ---                                  | ---                          |
 | `shr` | `[a: int] [b: int] -- [a >> b: int]` | right **unsigned** bit shift |
 | `shl` | `[a: int] [b: int] -- [a << b: int]` | left bit shift               |
-| `or`  | `[a: int] [b: int] -- [a \| b: int]` | bit `or`                     |
-| `and` | `[a: int] [b: int] -- [a & b: int]`  | bit `and`                    |
+| `or`  | `[a: int] [b: int] -- [a \| b: int]` | bitwise `or`                     |
+| `and` | `[a: int] [b: int] -- [a & b: int]`  | bitwise `and`                    |
 
 #### Memory
 
