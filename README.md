@@ -51,8 +51,9 @@ $ ldd output
 - [ ] Deploy a static site with an online playground for compiling on the go
     - [ ] investigate and use goroutine for this
 - [ ] Self-hosted compiler
-    - [x] support extracting command line args
-    - [x] memory mapping file contents for self hosting parsing [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-size.goof](./examples/file-size.goof)
+    - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
+    - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)
+    - [ ] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv)
     - [ ] parse goof file into operations instead of hardcoding the program
 - [ ] Include directories and add support for finding included files
 - [ ] Add support for defining and calling functions with params
