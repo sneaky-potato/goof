@@ -406,6 +406,16 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
             _ = stack.Pop()
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_SYSCALL6:
+            util.CheckNumberOfArguments(stack.Size(), 7, op, "syscall6")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         default:
         }
         ip += 1

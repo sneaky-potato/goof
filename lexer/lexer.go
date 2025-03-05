@@ -15,7 +15,7 @@ import (
 )
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 42 {
+    if constants.COUNT_OPS != 43 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -73,7 +73,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     var program []model.Operation
     macros := make(map[string][]model.Token)
 
-    if constants.COUNT_OPS != 42 {
+    if constants.COUNT_OPS != 43 {
         panic("Exhaustive handling inside crossreference")
     }
 
