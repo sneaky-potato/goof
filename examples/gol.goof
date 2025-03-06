@@ -46,7 +46,9 @@ macro get_value
     COLS * + 8 * matrix + ,64
 end
 
-macro count_nbors 1 end
+macro count_nbors
+    drop drop 0 
+end
 
 macro next
     ROWS 0
@@ -67,19 +69,41 @@ macro next
                     2dup 3 rot set_value
                 else end
             else 
-                2dup get_value 0 = if
-                    nbors ,64
-                    3 = if
-                        2dup 2 rot set_value
-                    else end
-                end
+                nbors ,64
+                3 = if
+                    2dup 2 rot set_value
+                else end
             end
             
             rot // ROWS y COLS x
             1 +
         end
         drop drop
-        "\n" puts
+        1 +
+    end
+    drop drop
+
+
+    ROWS 0
+    // ROWS y
+    while 2dup > do
+        COLS 0
+        // ROWS y COLS x
+        while 2dup > do
+            rot rot // ROWS COLS x y
+            2dup // ROWS COLS x y x y
+            COLS * + 8 *// ROWS COLS x y (x+y*COLS)*8
+            matrix +
+            ,64
+            3 = if
+                2dup 0 rot set_value     
+            else
+                2dup 1 rot set_value
+            end
+            rot // ROWS y COLS x
+            1 +
+        end
+        drop drop
         1 +
     end
     drop drop
