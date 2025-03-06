@@ -1,0 +1,101 @@
+include "std.goof"
+
+macro ROWS 16 end
+macro COLS 32 end
+
+macro nbors mem end
+macro matrix mem 8 + end
+
+macro display
+    ROWS 0
+    // ROWS y
+    while 2dup > do
+        COLS 0
+        // ROWS y COLS x
+        while 2dup > do
+            // matrix + (y*COLS + x)*8
+            rot rot // ROWS COLS x y
+            2dup // ROWS COLS x y x y
+            COLS * + 8 *// ROWS COLS x y (x+y*COLS)*8
+            matrix +
+            ,64
+            dup 1 = if
+                "#" puts
+            else
+                "." puts
+            end
+            drop
+            rot // ROWS y COLS x
+            1 +
+        end
+        drop drop
+        "\n" puts
+        1 +
+    end
+    drop drop
+end
+
+macro set_value
+    // value y x
+    swap
+    COLS * + 8 * matrix + swap .64
+end
+
+macro get_value
+    // y x
+    COLS * + 8 * matrix + ,64
+end
+
+macro count_nbors 1 end
+
+macro next
+    ROWS 0
+    // ROWS y
+    while 2dup > do
+        COLS 0
+        // ROWS y COLS x
+        while 2dup > do
+            rot rot // ROWS COLS x y
+            2dup // ROWS COLS x y x y
+            count_nbors // ROWS COLS x y nbors
+            nbors swap .64 // ROWS COLS x y
+            2dup get_value 1 = if
+                nbors ,64
+                // ROWS COLS x y (nbors > 3)|(nbors < 2)
+                dup 2 < swap 3 > |
+                if
+                    2dup 3 rot set_value
+                else end
+            else 
+                2dup get_value 0 = if
+                    nbors ,64
+                    3 = if
+                        2dup 2 rot set_value
+                    else end
+                end
+            end
+            
+            rot // ROWS y COLS x
+            1 +
+        end
+        drop drop
+        "\n" puts
+        1 +
+    end
+    drop drop
+end
+
+// 010
+// 001
+// 111
+1 0 1 set_value
+1 1 2 set_value
+1 2 0 set_value
+1 2 1 set_value
+1 2 2 set_value
+
+display
+next
+display
+
+

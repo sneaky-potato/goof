@@ -5,7 +5,6 @@
 #define COLS 32
 
 int front[ROWS][COLS] = {0};
-int back[ROWS][COLS] = {0};
 
 void display() {
     for (int y = 0; y < ROWS; y++) {
