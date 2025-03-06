@@ -95,11 +95,14 @@ macro next
             COLS * + 8 *// ROWS COLS x y (x+y*COLS)*8
             matrix +
             ,64
-            3 = if
+            dup 3 = if
                 2dup 0 rot set_value     
             else
-                2dup 1 rot set_value
+                dup 2 = if
+                    2dup 1 rot set_value
+                end
             end
+            drop
             rot // ROWS y COLS x
             1 +
         end
