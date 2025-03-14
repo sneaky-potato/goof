@@ -76,7 +76,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("    mov [args_ptr], rsp\n")
 
     ip := 0
-    if constants.COUNT_OPS != 43 {
+    if constants.COUNT_OPS != 44 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -146,12 +146,12 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    push rdx\n")
         case constants.OP_IF:
             out.WriteString("    ;; -- if --\n")
-            out.WriteString("    pop rax\n")
-            out.WriteString("    test rax, rax\n")
+        case constants.OP_ELIF:
+            out.WriteString("    ;; -- elif --\n")
             if operation.Jump < 0 {
-                panic("`if` instruction does not have reference to end of its block, please use end after if")
+                panic("`elif` instruction does not have reference to end of its block, please use end after elif")
             }
-            out.WriteString(fmt.Sprintf("    jz addr_%d\n", operation.Jump))
+            out.WriteString(fmt.Sprintf("    jmp addr_%d\n", operation.Jump))
         case constants.OP_ELSE:
             out.WriteString("    ;; -- else --\n")
             if operation.Jump < 0 {

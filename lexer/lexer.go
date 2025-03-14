@@ -15,7 +15,7 @@ import (
 )
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 43 {
+    if constants.COUNT_OPS != 44 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -70,10 +70,11 @@ func expandMacro(macroTokens []model.Token, expanded int) []model.Token {
 
 func compileTokenList(tokenList []model.Token) []model.Operation {
     var stack = new(util.Stack[int])
+    var elifStack = new(util.Stack[int])
     var program []model.Operation
     macros := make(map[string][]model.Token)
 
-    if constants.COUNT_OPS != 43 {
+    if constants.COUNT_OPS != 44 {
         panic("Exhaustive handling inside crossreference")
     }
 
@@ -117,28 +118,48 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
         }
         if op.Op == constants.OP_IF {
             stack.Push(ip)
+        } else if op.Op == constants.OP_ELIF {
+            if stack.Size() == 0 {
+                util.TerminateWithError(token.FilePath, token.Row, "`elif` can only be used after `do`")
+            }
+            do_ip := stack.Pop()
+            if program[do_ip].Op != constants.OP_DO {
+                util.TerminateWithError(token.FilePath, token.Row, "`elif` can only be used after `do` block")
+            }
+            // # ip + 1 so that it doesn't jump to elif but rather body of elif
+            program[do_ip].Jump = ip + 1
+            stack.Push(ip)
+            elifStack.Push(ip)
         } else if op.Op == constants.OP_ELSE {
             if stack.Size() == 0 {
-                util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if`")
+                util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if-do` block")
             }
-            if_ip := stack.Pop()
-            if program[if_ip].Op != constants.OP_IF {
-                util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `if` block")
+            do_ip := stack.Pop()
+            if program[do_ip].Op != constants.OP_DO {
+                util.TerminateWithError(token.FilePath, token.Row, "`else` can only be used after `do` block")
             }
             // # ip + 1 so that it doesn't jump to else but rather body of else
-            program[if_ip].Jump = ip + 1
+            program[do_ip].Jump = ip + 1
             stack.Push(ip)
         } else if op.Op == constants.OP_END {
             if stack.Size() == 0 {
                 util.TerminateWithError(token.FilePath, token.Row, "`end` can only be used after `if` `else` `do`")
             }
             block_ip := stack.Pop()
-            if program[block_ip].Op == constants.OP_IF || program[block_ip].Op == constants.OP_ELSE {
+            if program[block_ip].Op == constants.OP_ELSE {
                 program[block_ip].Jump = ip
                 program[ip].Jump = ip + 1
             } else if program[block_ip].Op == constants.OP_DO {
-                program[ip].Jump = program[block_ip].Jump
-                program[block_ip].Jump = ip + 1
+                if program[program[block_ip].Jump].Op == constants.OP_WHILE {
+                    program[ip].Jump = program[block_ip].Jump
+                    program[block_ip].Jump = ip + 1
+                } else {
+                    program[ip].Jump = ip + 1
+                    program[block_ip].Jump = ip
+                    for elifStack.Size() > 0 {
+                        program[elifStack.Pop()].Jump = ip
+                    }
+                }
             } else {
                 util.TerminateWithError(token.FilePath, token.Row, "`end` can only close `if` `else` `do` blocks for now")
             }
@@ -146,15 +167,18 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             stack.Push(ip)
         } else if op.Op == constants.OP_DO {
             if stack.Size() == 0 {
-                util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
+                util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`, `if`, `elif")
             }
-            while_ip := stack.Pop()
+            while_if_ip := stack.Pop()
 
-            if program[while_ip].Op != constants.OP_WHILE {
-                util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`")
+            if program[while_if_ip].Op == constants.OP_IF || program[while_if_ip].Op == constants.OP_ELIF {
+                program[ip].Jump = while_if_ip
+            } else if program[while_if_ip].Op == constants.OP_WHILE {
+                program[ip].Jump = while_if_ip
+            } else {
+                util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`, `if`, 'elif")
             }
 
-            program[ip].Jump = while_ip
             stack.Push(ip)
         } else if op.Op == constants.OP_MACRO {
             token, tokenList = tokenList[0], tokenList[1:]

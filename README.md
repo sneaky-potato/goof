@@ -48,6 +48,7 @@ $ ldd output
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [x] Add editor config for vim and nvim for goof source files, check [vim.goof](./editor/vim.goof)
+- [ ] Add support for `elif`
 - [ ] Deploy a static site with an online playground for compiling on the go
     - [ ] investigate and use goroutine for this
 - [ ] Self-hosted compiler

@@ -15,6 +15,7 @@ const (
     OP_LT
 
     OP_IF
+    OP_ELIF
     OP_ELSE
     OP_END
     OP_WHILE
@@ -63,6 +64,7 @@ var BUILTIN_WORDS = map[string]int{
     "=": OP_EQ,
     "!=": OP_NE,
     "if": OP_IF,
+    "elif": OP_ELIF,
     "else": OP_ELSE,
     "end": OP_END,
     "while": OP_WHILE,
