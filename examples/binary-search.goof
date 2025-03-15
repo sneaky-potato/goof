@@ -38,27 +38,20 @@ while 2dup 2dup > rot = | do
     2dup + 1 shr // hi lo mid
     dup 8 * nums + ,64 // hi lo mid nums[mid]
     
-    dup key ,64 = if
+    if dup key ,64 = do
         drop
         dump
         0 exit
+    elif dup key ,64 < do
+        drop
+        swap drop
+        1 +
     else
-        // key > nums[mid]
-        dup key ,64 < if
-            // update lo 
-            drop
-            swap drop
-            1 +
-            // hi mid+1
-        else
-            // update hi
-            drop
-            rot rot
-            drop
-            1 -
-            swap
-            // mid-1 lo
-        end
+        drop
+        rot rot
+        drop
+        1 -
+        swap
     end
 end
 

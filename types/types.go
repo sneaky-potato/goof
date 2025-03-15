@@ -199,9 +199,9 @@ func TypeCheckingProgram(program []model.Operation) {
                 panic("do must be used after if, elif or while")
             }
             isEqual := stackEqual(*stack, block.stack)
-            if !isEqual {
+            if block.typ == constants.OP_WHILE && !isEqual {
                 fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
-                util.TerminateWithError(op.FilePath, op.Row, "do condition cannot modify the types on data stack")
+                util.TerminateWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on data stack")
             }
             copyStack := stack.Copy()
             blockStacks.Push(blockStack {*copyStack, op.Op})

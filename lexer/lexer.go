@@ -149,6 +149,9 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             if program[block_ip].Op == constants.OP_ELSE {
                 program[block_ip].Jump = ip
                 program[ip].Jump = ip + 1
+                for elifStack.Size() > 0 {
+                    program[elifStack.Pop()].Jump = ip
+                }
             } else if program[block_ip].Op == constants.OP_DO {
                 if program[program[block_ip].Jump].Op == constants.OP_WHILE {
                     program[ip].Jump = program[block_ip].Jump
