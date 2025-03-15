@@ -1,10 +1,10 @@
 include "std.goof"
 
-macro ROWS 4 end
-macro COLS 8 end
+macro ROWS 8 end
+macro COLS 16 end
 
 macro nbors mem end
-macro matrix mem 8 + end
+macro matrix nbors 8 + end
 
 macro display
     ROWS 0
@@ -124,11 +124,14 @@ macro next
             2dup // ROWS COLS j i j i
             get_value
             if dup 3 = do
+                drop
                 2dup 0 rot set_value     
             elif dup 2 = do
+                drop
                 2dup 1 rot set_value
+            else
+                drop
             end
-            drop
             rot // ROWS i COLS j
             1 +
         end
