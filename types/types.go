@@ -161,20 +161,22 @@ func TypeCheckingProgram(program []model.Operation) {
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for !=\n" + foundArguments)
             }
         case constants.OP_IF:
-            util.CheckNumberOfArguments(stack.Size(), 1, op, "if")
-            var a typedOperand
-            a = stack.Pop()
-            if a.typ != TYPE_BOOL {
-                foundArguments := getStringFromOperands(a)
-                util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for if\n" + foundArguments)
+            copyStack := stack.Copy()
+            blockStacks.Push(blockStack {*copyStack, op.Op})
+        case constants.OP_ELIF:
+            var block blockStack
+            block = blockStacks.Pop()
+            if block.typ != constants.OP_DO {
+                panic("elif can only be used after do")
             }
             copyStack := stack.Copy()
             blockStacks.Push(blockStack {*copyStack, op.Op})
+            stack.Assign(block.stack)
         case constants.OP_ELSE:
             var block blockStack
             block = blockStacks.Pop()
-            if block.typ != constants.OP_IF {
-                panic("else can only be used after if")
+            if block.typ != constants.OP_DO {
+                panic("else can only be used after do")
             }
             copyStack := stack.Copy()
             blockStacks.Push(blockStack {*copyStack, op.Op})
@@ -193,11 +195,11 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "do")
             var block blockStack
             block = blockStacks.Pop()
-            if block.typ != constants.OP_WHILE {
-                panic("do must be used after while")
+            if block.typ != constants.OP_WHILE && block.typ != constants.OP_IF && block.typ != constants.OP_ELIF {
+                panic("do must be used after if, elif or while")
             }
             isEqual := stackEqual(*stack, block.stack)
-            if !isEqual {
+            if block.typ == constants.OP_WHILE && !isEqual {
                 fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
                 util.TerminateWithError(op.FilePath, op.Row, "while-do condition cannot modify the types on data stack")
             }
@@ -207,17 +209,11 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "end")
             var block blockStack
             block = blockStacks.Pop()
-            if block.typ == constants.OP_IF {
+            if block.typ == constants.OP_ELSE {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
                     fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
-                    util.TerminateWithError(op.FilePath, op.Row, "else-less if cannot modify the types on data stack")
-                }
-            } else if block.typ == constants.OP_ELSE {
-                isEqual := stackEqual(*stack, block.stack)
-                if !isEqual {
-                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
-                    util.TerminateWithError(op.FilePath, op.Row, "both branches of if-block must produce same type arguments on data stack")
+                    util.TerminateWithError(op.FilePath, op.Row, "all branches of if-else must produce same type arguments on data stack")
                 }
             } else if block.typ == constants.OP_DO {
                 isEqual := stackEqual(*stack, block.stack)
@@ -393,8 +389,24 @@ func TypeCheckingProgram(program []model.Operation) {
             _ = stack.Pop()
             _ = stack.Pop()
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_SYSCALL2:
+            util.CheckNumberOfArguments(stack.Size(), 2, op, "syscall2")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_SYSCALL3:
             util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_SYSCALL6:
+            util.CheckNumberOfArguments(stack.Size(), 7, op, "syscall6")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()

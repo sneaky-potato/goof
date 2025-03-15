@@ -15,6 +15,7 @@ const (
     OP_LT
 
     OP_IF
+    OP_ELIF
     OP_ELSE
     OP_END
     OP_WHILE
@@ -44,7 +45,9 @@ const (
     OP_CAST_BOOL
 
     OP_SYSCALL1
+    OP_SYSCALL2
     OP_SYSCALL3
+    OP_SYSCALL6
     OP_ARGV
     OP_ARGC
     OP_DUMP
@@ -61,6 +64,7 @@ var BUILTIN_WORDS = map[string]int{
     "=": OP_EQ,
     "!=": OP_NE,
     "if": OP_IF,
+    "elif": OP_ELIF,
     "else": OP_ELSE,
     "end": OP_END,
     "while": OP_WHILE,
@@ -87,7 +91,9 @@ var BUILTIN_WORDS = map[string]int{
     "(ptr)": OP_CAST_PTR,
     "(bool)": OP_CAST_BOOL,
     "syscall1": OP_SYSCALL1,
+    "syscall2": OP_SYSCALL2,
     "syscall3": OP_SYSCALL3,
+    "syscall6": OP_SYSCALL6,
     "argv": OP_ARGV,
     "argc": OP_ARGC,
     "dump": OP_DUMP,

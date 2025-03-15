@@ -8,11 +8,11 @@ macro cnt putd-buffer PUTD_BUFFER_CAP + end
 macro nums cnt 8 + end
 
 macro putd
-    dup 0 = if
+    if dup 0 = do
         "0" puts
     else
         0 (bool)
-        over 0 < if
+        if over 0 < do
             drop
             -1 *
             1 (bool)
@@ -29,7 +29,7 @@ macro putd
             48 + . swap
         end
         rot rot // n ptr flag
-        if
+        if do
             1 - dup 45 .
         else end
         // n ptr
@@ -66,7 +66,7 @@ while 2dup > do
         dup 8 +            // &nums[j] &nums[j+1]
         ,64 swap ,64       // nums[j+1] nums[j]
 
-        < if               // if (nums[j] > nums[j+1])
+        if < do               // if (nums[j] > nums[j+1])
             dup 8 * nums + // &nums[j]
             dup 8 + 2dup   // &nums[j] &nums[j+1] &nums[j] &nums[j+1]
             ,64 swap ,64   // &nums[j] &nums[j+1] nums[j+1] nums[j]

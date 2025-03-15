@@ -1,49 +1,59 @@
-// mem[0 .. 6] = sorted array of nums
-// mem[7] = key
+include "std.goof"
 
-mem dup 10 . 
-1 + dup 20 .
-1 + dup 30 .
-1 + dup 40 .
-1 + dup 50 .
-1 + dup 60 .
-1 + dup 70 .
+macro BUFFER_CAP 256 end
 
-1 + dup 60 . // key
+macro cnt mem end
+macro key cnt 8 + end
+macro nums key 8 + end
 
-0 6 while 2dup 2dup < rot = | do
-    2dup // low high
-    + 1 shr // mid
-    1 - // mid-1
-    dup 2 + // mid-1 mid+1
-    dup 1 - // mid-1 mid+1 mid
-    mem + , // mid-1 mid+1 mem[mid]
-    mem 7 + , // mid-1 mid+1 mem[mid] key
+cnt
+BUFFER_CAP over stdin read drop // read cnt
 
-    2dup
+dup stoi     // mem[cnt] cnt
+.64
+cnt ,64      // cnt
 
-    = if
-        drop drop
-        // print Y in case key is found
-        // mem[8] = 'Y'; mem[9] = '\n'
-        mem 8 + 89 .
-        mem 9 + 10 .
-        2 mem 8 + 1 1 syscall3 drop
-        // print mid index
-        1 - dump
-        // exit
-    else
-
-        < if // mid-1 mid+1
-            // update low
-            swap drop // low high mid+1
-            swap // low mid+1 high 
-        else
-            // update high
-            drop // low high mid-1
-            swap drop // low mid-1
-        end
-
-    end
-
+0 
+// cnt i
+while 2dup > do
+    dup 8 * nums +
+    BUFFER_CAP over stdin read drop
+    dup stoi .64
+    1 + // i++
 end
+
+drop
+
+key
+BUFFER_CAP over stdin read drop // read key
+
+dup stoi
+.64
+
+1 - 
+0 
+
+// hi lo
+while 2dup 2dup > rot = | do
+    2dup + 1 shr // hi lo mid
+    dup 8 * nums + ,64 // hi lo mid nums[mid]
+    
+    if dup key ,64 = do
+        drop
+        dump
+        0 exit
+    elif dup key ,64 < do
+        drop
+        swap drop
+        1 +
+    else
+        drop
+        rot rot
+        drop
+        1 -
+        swap
+    end
+end
+
+drop drop
+1 exit

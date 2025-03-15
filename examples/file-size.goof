@@ -1,10 +1,8 @@
 include "std.goof"
 
-macro BUFFER_CAP 1024 end
-
 // memory layout
 macro fd mem end
-macro buffer fd 8 + end
+macro statbuf fd 8 + end
 
 if argc 2 < do
     "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs
@@ -24,9 +22,14 @@ end
 
 fd swap .64
 
-69
-while drop BUFFER_CAP buffer fd ,64 read dup 0 > do
-    buffer stdout write
-end drop
+statbuf fd ,64 fstat
+
+if dup 0 < do
+    "error: could not determine size of file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+statbuf stat.st_size ,64 dump
+drop
 
 fd ,64 close drop
