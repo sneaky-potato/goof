@@ -7,7 +7,7 @@ mem N 2 - + 1 .
 0 while dup N < do
     0 while dup N 2 - < do
         // if (mem[j] == 1)
-        dup mem + , 1 = if
+        if dup mem + , 1 = do
             mem N + '#' .
         else
             mem N + ' ' .

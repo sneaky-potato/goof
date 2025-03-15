@@ -26,8 +26,6 @@ macro exit SYS_EXIT syscall1 drop end
 
 macro / divmod drop end
 macro % divmod swap drop end
-macro mod % end
-macro div / end
 
 macro sizeof(stat) 144 end
 macro stat.st_dev 0 + end

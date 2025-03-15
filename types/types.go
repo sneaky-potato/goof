@@ -209,13 +209,7 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(blockStacks.Size(), 1, op, "end")
             var block blockStack
             block = blockStacks.Pop()
-            if block.typ == constants.OP_ELIF {
-                isEqual := stackEqual(*stack, block.stack)
-                if !isEqual {
-                    fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))
-                    util.TerminateWithError(op.FilePath, op.Row, "all branches of if-else must produce same type arguments on data stack")
-                }
-            } else if block.typ == constants.OP_ELSE {
+            if block.typ == constants.OP_ELSE {
                 isEqual := stackEqual(*stack, block.stack)
                 if !isEqual {
                     fmt.Printf("expected: %s\nactual: %s\n", getStackString(block.stack), getStackString(*stack))

@@ -14,7 +14,7 @@ macro sizeof(Op) 16 end
 
 // 10 -> "10"
 macro putd
-    dup 0 = if
+    if dup 0 = do
         "0" puts
     else
         putd-buffer PUTD_BUFFER_CAP +
@@ -96,22 +96,23 @@ macro compile-ops
     "_start:\n" puts
     0 while dup ops-count ,64 < do
         dup sizeof(Op) * ops +
-        dup ,64 OP_PUSH_INT = if
+        if dup ,64 OP_PUSH_INT = do
             "    ;; -- push int " puts dup 8 + ,64 putd " --\n" puts
             "    mov rax, " puts dup 8 + ,64 putd "\n" puts
             "    push rax\n" puts
-        else dup ,64 OP_PLUS = if
+        elif dup ,64 OP_PLUS = do
             "    ;; -- plus --\n" puts
             "    pop rax\n" puts
             "    pop rbx\n" puts
             "    add rax, rbx\n" puts
             "    push rax\n" puts
-        else dup ,64 OP_DUMP = if
+        elif dup ,64 OP_DUMP = do
             "    ;; -- dump --\n" puts
             "    pop rdi\n" puts
             "    call dump\n" puts
-        else here eputs ": unreachable\n" eputs 1 exit
-        end end end
+        else 
+            here eputs ": unreachable\n" eputs 1 exit
+        end
         drop
         1 +
     end

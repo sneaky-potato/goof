@@ -1,31 +1,28 @@
 include "std.goof"
 
-macro ROWS 16 end
-macro COLS 32 end
+macro ROWS 4 end
+macro COLS 8 end
 
 macro nbors mem end
 macro matrix mem 8 + end
 
 macro display
     ROWS 0
-    // ROWS y
+    // ROWS i
     while 2dup > do
         COLS 0
-        // ROWS y COLS x
+        // ROWS i COLS j
         while 2dup > do
-            // matrix + (y*COLS + x)*8
-            rot rot // ROWS COLS x y
-            2dup // ROWS COLS x y x y
-            COLS * + 8 *// ROWS COLS x y (x+y*COLS)*8
-            matrix +
-            ,64
-            dup 1 = if
+            rot rot // ROWS COLS j i
+            2dup // ROWS COLS j i j i
+            get_value
+            if dup 1 = do
                 "#" puts
             else
                 "." puts
             end
             drop
-            rot // ROWS y COLS x
+            rot // ROWS i COLS j
             1 +
         end
         drop drop
@@ -36,46 +33,79 @@ macro display
 end
 
 macro set_value
-    // value y x
-    swap
+    // value j i
     COLS * + 8 * matrix + swap .64
 end
 
 macro get_value
-    // y x
+    // j i
     COLS * + 8 * matrix + ,64
 end
 
+macro mod
+    // a b
+    dup // a b b
+    rot // b a b
+    + // b (a+b)
+    swap
+    %
+end
+
+macro norm
+    // j i
+    ROWS mod // j i%ROWS
+    swap COLS mod // i%ROWS j%COLS
+    swap
+end
+
+macro get_nbor
+    // j i dj di
+    rot rot // j dj di i
+    + rot + // j dj i+di --> i+di j+dj
+    swap
+    norm 
+    get_value
+    if dup 1 = swap 3 = | do
+        nbors ,64 1 + nbors swap .64
+    end
+end
+
 macro count_nbors
-    drop drop 0 
+    nbors 0 .64 // nbors
+    // j i
+    2dup -1 -1 get_nbor
+    2dup 0 -1 get_nbor
+    2dup 1 -1 get_nbor
+    2dup -1 0 get_nbor
+    2dup 1 0 get_nbor
+    2dup -1 1 get_nbor
+    2dup 0 1 get_nbor
+    2dup 1 1 get_nbor
+    drop drop
 end
 
 macro next
     ROWS 0
-    // ROWS y
+    // ROWS i
     while 2dup > do
         COLS 0
-        // ROWS y COLS x
+        // ROWS i COLS j
         while 2dup > do
-            rot rot // ROWS COLS x y
-            2dup // ROWS COLS x y x y
-            count_nbors // ROWS COLS x y nbors
-            nbors swap .64 // ROWS COLS x y
-            2dup get_value 1 = if
-                nbors ,64
-                // ROWS COLS x y (nbors > 3)|(nbors < 2)
-                dup 2 < swap 3 > |
-                if
+            rot rot // ROWS COLS j i
+            2dup // ROWS COLS j i j i
+            count_nbors // ROWS COLS j i
+            if 2dup get_value 1 = do
+                // ROWS COLS j i
+                if nbors ,64 dup 2 < swap 3 > | do
                     2dup 3 rot set_value
-                else end
-            else 
-                nbors ,64
-                3 = if
+                end
+            elif 2dup get_value 0 = do
+                if nbors ,64 3 = do
                     2dup 2 rot set_value
-                else end
+                end
             end
             
-            rot // ROWS y COLS x
+            rot // ROWS i COLS j
             1 +
         end
         drop drop
@@ -85,25 +115,21 @@ macro next
 
 
     ROWS 0
-    // ROWS y
+    // ROWS i
     while 2dup > do
         COLS 0
-        // ROWS y COLS x
+        // ROWS i COLS j
         while 2dup > do
-            rot rot // ROWS COLS x y
-            2dup // ROWS COLS x y x y
-            COLS * + 8 *// ROWS COLS x y (x+y*COLS)*8
-            matrix +
-            ,64
-            dup 3 = if
+            rot rot // ROWS COLS j i
+            2dup // ROWS COLS j i j i
+            get_value
+            if dup 3 = do
                 2dup 0 rot set_value     
-            else
-                dup 2 = if
-                    2dup 1 rot set_value
-                end
+            elif dup 2 = do
+                2dup 1 rot set_value
             end
             drop
-            rot // ROWS y COLS x
+            rot // ROWS i COLS j
             1 +
         end
         drop drop
@@ -115,14 +141,12 @@ end
 // 010
 // 001
 // 111
-1 0 1 set_value
-1 1 2 set_value
-1 2 0 set_value
+1 1 0 set_value
 1 2 1 set_value
+1 0 2 set_value
+1 1 2 set_value
 1 2 2 set_value
 
 display
 next
 display
-
-

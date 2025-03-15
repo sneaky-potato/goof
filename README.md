@@ -62,6 +62,7 @@ $ ldd output
 
 ## BUGS
 - [ ] dump operation only prints unsigned integers
+- [ ] elif branches in if construction might produce different arguments on stack
 
 ## Language Reference
 
