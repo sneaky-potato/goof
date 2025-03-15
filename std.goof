@@ -69,7 +69,7 @@ end
 // string pointed to by ptr must be null terminated
 macro stoi
     0 (bool)
-    over , 45 = if
+    if over , 45 = do
         drop
         1 +
         1 (bool)
@@ -78,6 +78,7 @@ macro stoi
     0
     // flag ptr val
     over ,
+    // flag ptr val *ptr
     while dup 58 < over 47 > & do
         // ptr val *ptr
         48 -
@@ -92,10 +93,13 @@ macro stoi
         // ptr+1 [*ptr-'0' + val*10]
         over ,
     end
-    drop swap drop
-    swap if
+    drop swap 
+    drop
+    // flag val
+    if over do
         -1 *
     end
+    swap drop
 end
 
 macro puts
