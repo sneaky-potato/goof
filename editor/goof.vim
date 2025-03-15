@@ -15,9 +15,9 @@ set iskeyword=a-z,A-Z,-,*,_,!,@
 syntax keyword goofTodos TODO XXX FIXME NOTE
 
 " Language keywords
-syntax keyword goofKeywords if if* else while do include mem end here macro
+syntax keyword goofKeywords if elif else while do include mem end here macro
 
-syntax keyword goofStatements dup rot over swap
+syntax keyword goofStatements dup 2dup rot over swap drop
 
 " Comments
 syntax region goofCommentLine start="//" end="$"   contains=goofTodos
