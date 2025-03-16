@@ -3,6 +3,7 @@ package constants
 const (
     OP_PUSH_INT = iota
     OP_PUSH_STR
+    OP_PUSH_PTR
 
     OP_PLUS
     OP_MINUS
@@ -21,6 +22,7 @@ const (
     OP_WHILE
     OP_DO
     OP_MACRO
+    OP_MEMORY
 
     OP_DUP
     OP_2DUP
@@ -70,6 +72,7 @@ var BUILTIN_WORDS = map[string]int{
     "while": OP_WHILE,
     "do": OP_DO,
     "macro": OP_MACRO,
+    "memory": OP_MEMORY,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,
