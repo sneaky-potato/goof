@@ -76,7 +76,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("    mov [args_ptr], rsp\n")
 
     ip := 0
-    if constants.COUNT_OPS != 44 {
+    if constants.COUNT_OPS != 46 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -96,6 +96,11 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    push rax\n")
             out.WriteString(fmt.Sprintf("    push str_%d\n", len(strs)))
             strs = append(strs, val)
+        case constants.OP_PUSH_PTR:
+            out.WriteString(fmt.Sprintf("    ;; -- push mem + %d --\n", operation.Value))
+            out.WriteString(fmt.Sprintf("    mov rax, mem\n"))
+            out.WriteString(fmt.Sprintf("    add rax, %d\n", operation.Value))
+            out.WriteString("    push rax\n")
         case constants.OP_PLUS:
             out.WriteString("    ;; -- plus --\n")
             out.WriteString("    pop rax\n")

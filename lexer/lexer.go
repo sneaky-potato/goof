@@ -275,8 +275,6 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                 memory[memoryNameString] = memoryPtr
                 memoryPtr += int(memorySize)
             }
-            ip -= 1
-
         } else if op.Op == constants.OP_MACRO {
             token, tokenList = tokenList[0], tokenList[1:]
             var macroName = token

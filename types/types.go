@@ -352,7 +352,7 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ != TYPE_INT || b.typ != TYPE_PTR {
+            if (a.typ != TYPE_INT && a.typ != TYPE_PTR) || b.typ != TYPE_PTR {
                 foundArguments := getStringFromOperands(a, b)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .\n" + foundArguments)
             }
@@ -369,7 +369,7 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ != TYPE_INT || b.typ != TYPE_PTR {
+            if (a.typ != TYPE_INT && a.typ != TYPE_PTR) || b.typ != TYPE_PTR {
                 foundArguments := getStringFromOperands(a, b)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .64\n" + foundArguments)
             }

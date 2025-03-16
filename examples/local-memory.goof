@@ -10,12 +10,13 @@ macro memcpy // src dst
 
     0 while dup memcpy_size ,64 < do
         dup  memcpy_src ,64 + (ptr) ,
-        over memcpy_dst ,64 + (ptr) .
+        over memcpy_dst ,64 + (ptr) swap .
         1 +
     end drop
 end
 
 memory hello 256 end
+memcpy_size 256 .64
 "Hello world\n" hello 
 memcpy
 
