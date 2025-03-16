@@ -1,0 +1,70 @@
+macro sizeof(str) 16 end
+macro str.count 0 + end
+macro str.data  8 + end
+
+// ptr --> count "string"
+macro ,str
+    dup str.count ,64
+    swap str.data ,64
+end
+
+macro chop-left // input
+    dup str.count dec64
+    dup str.data inc64
+    drop
+end
+
+macro trim-left // input
+    while
+        if dup str.count ,64 0 > do
+            dup str.data ,64 (ptr) , 32 =
+        else
+            0 (bool)
+        end
+    do
+        dup chop-left
+    end
+    drop
+end
+
+macro chop-line // line input
+    2dup str.data ,64 swap str.data swap .64
+    over str.count 0 .64
+    while
+        if dup str.count ,64 0 > do
+            dup str.data ,64 (ptr) , 10 !=
+        else
+            0 (bool)
+        end
+    do
+        dup chop-left
+        swap
+        dup str.count inc64
+        swap
+    end
+    if dup str.count ,64 0 > do
+        dup chop-left
+    end
+    drop drop
+end
+
+macro chop-word // word line
+    2dup str.data ,64 swap str.data swap .64
+    over str.count 0 .64
+    while
+        if dup str.count ,64 0 > do
+            dup str.data ,64 (ptr) , 32 !=
+        else
+            0 (bool)
+        end
+    do
+        dup chop-left
+        swap
+        dup str.count inc64
+        swap
+    end
+    if dup str.count ,64 0 > do
+        dup chop-left
+    end
+    drop drop
+end

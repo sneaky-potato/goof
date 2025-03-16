@@ -2,9 +2,35 @@ include "std.goof"
 
 macro ROWS 8 end
 macro COLS 16 end
+macro PUTD_BUFFER_CAP 32 end
 
 macro nbors mem end
-macro matrix nbors 8 + end
+macro time nbors 8 + end
+macro putd-buffer time 8 + end
+macro matrix nbors PUTD_BUFFER_CAP + end
+
+
+// 10 -> "10"
+macro putd
+    if dup 0 = do
+        "0" puts
+    else
+        putd-buffer PUTD_BUFFER_CAP +
+        // n ptr
+        while over 0 > do
+            1 - dup rot rot
+            // ptr ptr n
+            10 divmod
+            // ptr ptr n%10 n/10
+            rot rot swap
+            // ptr n/10 ptr n%10
+            48 + . swap
+        end
+        dup // n ptr len
+        putd-buffer PUTD_BUFFER_CAP + swap - swap puts
+   end
+   drop
+end
 
 macro display
     ROWS 0
@@ -150,6 +176,11 @@ end
 1 1 2 set_value
 1 2 2 set_value
 
-display
-next
-display
+time 1 .
+
+while 1 (bool) do
+    next
+    display
+    "\033[" puts ROWS putd "A\033[" puts COLS putd "D" puts
+    0 time sleep drop
+end

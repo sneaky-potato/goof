@@ -48,16 +48,18 @@ $ ldd output
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [x] Add editor config for vim and nvim for goof source files, check [vim.goof](./editor/vim.goof)
-- [ ] Add support for `elif`
-- [ ] Deploy a static site with an online playground for compiling on the go
-    - [ ] investigate and use goroutine for this
+- [x] Add support for `elif`
+- [ ] Add local memory
+- [ ] Add procedures with parameters and return values
+- [ ] Deprecate macros
 - [ ] Self-hosted compiler
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
     - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)
-    - [ ] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv)
+    - [x] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv), check [string.goof](./string.goof)
     - [ ] parse goof file into operations instead of hardcoding the program
+- [ ] Deploy a static site with an online playground for compiling on the go
+    - [ ] investigate and use goroutine for this
 - [ ] Include directories and add support for finding included files
-- [ ] Add support for defining and calling functions with params
 - [ ] Add library builtin functions
 
 ## BUGS
@@ -104,7 +106,7 @@ When the compiler encounters a string the following happens:
 | `dup`   | `a -- a a`       | duplicate an element on top of the stack                                                    |
 | `swap`  | `a b -- b a`     | swap 2 elements on the top of the stack                                                     |
 | `drop`  | `a b -- a`       | drops the top element of the stack                                                          |
-| `dump`  | `a b -- a`       | print the element on top of the stack in a free form to stdout and remove it from the stack |
+| `dump`  | `a b -- a`       | print the element on top of the stack, remove it from the stack (element is treated as unsigned 64bit int) |
 | `over`  | `a b -- a b a`   | copy the element below the top of the stack                                                 |
 | `rot`   | `a b c -- c a b` | rotate the top three stack elements                                                         |
 
