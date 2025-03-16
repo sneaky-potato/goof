@@ -7,6 +7,7 @@ macro SYS_WRITE 1 end
 macro SYS_CLOSE 3 end
 macro SYS_FSTAT 5 end
 macro SYS_MMAP 9 end
+macro SYS_SLEEP 35 end
 macro SYS_EXIT 60 end
 macro SYS_OPENAT 257 end
 
@@ -21,6 +22,7 @@ macro read SYS_READ syscall3 end
 macro openat SYS_OPENAT syscall3 end
 macro mmap SYS_MMAP syscall6 end
 macro fstat SYS_FSTAT syscall2 end
+macro sleep SYS_SLEEP syscall2 end
 macro close SYS_CLOSE syscall1 end
 macro exit SYS_EXIT syscall1 drop end
 
@@ -110,6 +112,9 @@ end
 
 // ptr -> *ptr++
 macro inc64 dup ,64 1 + .64 end
+
+// ptr -> *ptr--
+macro dec64 dup ,64 1 - .64 end
 
 // n -> &argv[n]
 macro nth_argv

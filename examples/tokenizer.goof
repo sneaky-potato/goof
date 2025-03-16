@@ -1,0 +1,63 @@
+include "std.goof"
+include "string.goof"
+
+// memory layout
+macro fd mem end
+macro statbuf fd 8 + end
+macro content statbuf sizeof(stat) + end
+macro line content sizeof(str) + end
+macro word line sizeof(str) + end
+
+if argc 2 < do
+    "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs
+    "error: no input file provided\n" eputs
+    1 exit
+end
+
+O_RDONLY
+1 nth_argv
+AT_FDCWD
+openat
+
+if dup 0 < do
+    "error: could not open file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+fd swap .64
+
+if statbuf fd ,64 fstat 0 < do
+    "error: could not determine size of file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+content str.count statbuf stat.st_size ,64 .64
+
+// void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+0                        // offset
+fd ,64                   // fd
+MAP_PRIVATE              // flags
+PROT_READ                // prot
+content str.count ,64    // len
+0                        // addr
+
+mmap                     // syscall for mmap
+
+content str.data swap .64         // save the returned pointer to content: mem[content] = ptr to file content
+
+if content str.data ,64 0 < do
+    "error: could not memory map file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+while content str.count ,64 0 > do
+    line content chop-line
+    while
+        line str.count ,64 0 >
+    do
+        line trim-left
+        word line chop-word
+        "|" puts word ,str puts "|\n" puts
+    end
+end
+
