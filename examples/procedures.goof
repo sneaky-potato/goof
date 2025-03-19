@@ -1,0 +1,8 @@
+include "std.goof"
+
+
+proc sum
+    +
+end
+
+1 2 sum dump

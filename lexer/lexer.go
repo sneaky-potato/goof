@@ -17,9 +17,10 @@ import (
 
 var memory = make(map[string]int)
 var consts = make(map[string]int64)
+var procs = make(map[string]int)
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 47 {
+    if constants.COUNT_OPS != 50 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -34,6 +35,8 @@ func ParseTokenAsOp(token model.Token) model.Operation {
             return model.Operation{ constants.OP_PUSH_PTR, val, -1, token.FilePath, token.Row }
         } else if val, ok := consts[token.TokenWord.Value.(string)]; ok {
             return model.Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
+        } else if val, ok := procs[token.TokenWord.Value.(string)]; ok {
+            return model.Operation{ constants.OP_CALL, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -82,7 +85,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     macros := make(map[string][]model.Token)
     memoryPtr := 0
 
-    if constants.COUNT_OPS != 47 {
+    if constants.COUNT_OPS != 50 {
         panic("Exhaustive handling inside compileTokenList")
     }
 
@@ -121,7 +124,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             includedOperations := lexFile(token.TokenWord.Value.(string), token.TokenWord.Expanded + 1)
             tokenList = append(includedOperations, tokenList...)
         }
-        if op.Op != constants.OP_MACRO {
+        if op.Op != constants.OP_MACRO && op.Op != constants.OP_END {
             program = append(program, op)
         }
         if op.Op == constants.OP_IF {
@@ -155,12 +158,14 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             }
             block_ip := stack.Pop()
             if program[block_ip].Op == constants.OP_ELSE {
+                program = append(program, op)
                 program[block_ip].Jump = ip
                 program[ip].Jump = ip + 1
                 for elifStack.Size() > 0 {
                     program[elifStack.Pop()].Jump = ip
                 }
             } else if program[block_ip].Op == constants.OP_DO {
+                program = append(program, op)
                 if program[program[block_ip].Jump].Op == constants.OP_WHILE {
                     program[ip].Jump = program[block_ip].Jump
                     program[block_ip].Jump = ip + 1
@@ -171,8 +176,11 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                         program[elifStack.Pop()].Jump = ip
                     }
                 }
+            } else if program[block_ip].Op == constants.OP_PROC {
+                program[block_ip].Jump = ip + 1
+                program = append(program, model.Operation{constants.OP_RET, 0, -1, token.FilePath, token.Row})
             } else {
-                util.TerminateWithError(token.FilePath, token.Row, "`end` can only close `if` `else` `do` blocks for now")
+                util.TerminateWithError(token.FilePath, token.Row, "`end` can only close `if` `else` `do` `proc` blocks for now")
             }
         } else if op.Op == constants.OP_WHILE {
             stack.Push(ip)
@@ -329,6 +337,19 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             memorySize := memoryStack.Pop()
             memory[memoryNameString] = memoryPtr
             memoryPtr += int(memorySize)
+        } else if op.Op == constants.OP_PROC {
+            token, tokenList = tokenList[0], tokenList[1:]
+            var procName = token
+
+            if procName.TokenWord.Type != constants.TOKEN_WORD {
+                errorString := fmt.Sprintf("expected proc name to be a word but found %+v", procName.TokenWord.Value)
+                util.TerminateWithError(procName.FilePath, procName.Row, errorString)
+            }
+
+            procNameString := procName.TokenWord.Value.(string)
+            program[ip].Value = procNameString
+            stack.Push(ip)
+            procs[procNameString] = ip + 1
         } else if op.Op == constants.OP_MACRO {
             token, tokenList = tokenList[0], tokenList[1:]
             var macroName = token

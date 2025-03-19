@@ -43,9 +43,16 @@ const (
     OP_LOAD64
     OP_STORE64
 
+    OP_PROC
+    OP_RET
+    OP_CALL
+
     OP_CAST_INT
     OP_CAST_PTR
     OP_CAST_BOOL
+    // OP_TYPE_INT
+    // OP_TYPE_PTR
+    // OP_TYPE_BOOL
 
     OP_SYSCALL1
     OP_SYSCALL2
@@ -75,6 +82,7 @@ var BUILTIN_WORDS = map[string]int{
     "macro": OP_MACRO,
     "memory": OP_MEMORY,
     "const": OP_CONST,
+    "proc": OP_PROC,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,
@@ -95,6 +103,9 @@ var BUILTIN_WORDS = map[string]int{
     "(int)": OP_CAST_INT,
     "(ptr)": OP_CAST_PTR,
     "(bool)": OP_CAST_BOOL,
+    // "int": OP_TYPE_INT,
+    // "ptr": OP_TYPE_PTR,
+    // "bool": OP_TYPE_BOOL,
     "syscall1": OP_SYSCALL1,
     "syscall2": OP_SYSCALL2,
     "syscall3": OP_SYSCALL3,

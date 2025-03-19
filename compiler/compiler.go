@@ -76,7 +76,8 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("    mov [args_ptr], rsp\n")
 
     ip := 0
-    if constants.COUNT_OPS != 47 {
+    // TODO implement OP_PROC, OP_RET, OP_CALL
+    if constants.COUNT_OPS != 50 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -260,6 +261,11 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
                 panic("`do` instruction does not have reference to end of its block, please use end after else")
             }
             out.WriteString(fmt.Sprintf("    jz addr_%d\n", operation.Jump))
+        case constants.OP_PROC:
+            out.WriteString("    ;; -- proc --\n")
+            out.WriteString(fmt.Sprintf("    jmp %d\n", operation.Jump))
+        case constants.OP_RET:
+
         case constants.OP_MEM:
             out.WriteString("    ;; -- mem --\n")
             out.WriteString("    push mem\n")
