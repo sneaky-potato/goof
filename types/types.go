@@ -76,6 +76,9 @@ func TypeCheckingProgram(program []model.Operation) {
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
     var ip int = 0
+    if constants.COUNT_OPS != 47 {
+        panic("Exhaustive handling inside TypeCheckingProgram")
+    }
     for ip < len(program) {
         op := program[ip]
         switch op.Op {
@@ -83,6 +86,8 @@ func TypeCheckingProgram(program []model.Operation) {
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_PUSH_STR:
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+            stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+        case constants.OP_PUSH_PTR:
             stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
         case constants.OP_PLUS:
             util.CheckNumberOfArguments(stack.Size(), 2, op, "+")
@@ -347,7 +352,7 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ != TYPE_INT || b.typ != TYPE_PTR {
+            if (a.typ != TYPE_INT && a.typ != TYPE_PTR) || b.typ != TYPE_PTR {
                 foundArguments := getStringFromOperands(a, b)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .\n" + foundArguments)
             }
@@ -364,7 +369,7 @@ func TypeCheckingProgram(program []model.Operation) {
             var a, b typedOperand
             a = stack.Pop()
             b = stack.Pop()
-            if a.typ != TYPE_INT || b.typ != TYPE_PTR {
+            if (a.typ != TYPE_INT && a.typ != TYPE_PTR) || b.typ != TYPE_PTR {
                 foundArguments := getStringFromOperands(a, b)
                 util.TerminateWithError(op.FilePath, op.Row, "invalid arguments for .64\n" + foundArguments)
             }
