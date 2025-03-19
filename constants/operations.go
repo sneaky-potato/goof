@@ -23,6 +23,7 @@ const (
     OP_DO
     OP_MACRO
     OP_MEMORY
+    OP_CONST
 
     OP_DUP
     OP_2DUP
@@ -73,6 +74,7 @@ var BUILTIN_WORDS = map[string]int{
     "do": OP_DO,
     "macro": OP_MACRO,
     "memory": OP_MEMORY,
+    "const": OP_CONST,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,

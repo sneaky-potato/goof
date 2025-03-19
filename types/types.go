@@ -76,7 +76,7 @@ func TypeCheckingProgram(program []model.Operation) {
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
     var ip int = 0
-    if constants.COUNT_OPS != 46 {
+    if constants.COUNT_OPS != 47 {
         panic("Exhaustive handling inside TypeCheckingProgram")
     }
     for ip < len(program) {

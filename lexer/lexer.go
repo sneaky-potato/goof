@@ -16,9 +16,10 @@ import (
 
 
 var memory = make(map[string]int)
+var consts = make(map[string]int64)
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 46 {
+    if constants.COUNT_OPS != 47 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -31,6 +32,8 @@ func ParseTokenAsOp(token model.Token) model.Operation {
             return model.Operation{ val, 0, -1, token.FilePath, token.Row }
         } else if val, ok := memory[token.TokenWord.Value.(string)]; ok {
             return model.Operation{ constants.OP_PUSH_PTR, val, -1, token.FilePath, token.Row }
+        } else if val, ok := consts[token.TokenWord.Value.(string)]; ok {
+            return model.Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -79,7 +82,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     macros := make(map[string][]model.Token)
     memoryPtr := 0
 
-    if constants.COUNT_OPS != 46 {
+    if constants.COUNT_OPS != 47 {
         panic("Exhaustive handling inside compileTokenList")
     }
 
@@ -184,11 +187,70 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             } else if program[while_if_ip].Op == constants.OP_WHILE {
                 program[ip].Jump = while_if_ip
             } else {
-                fmt.Printf("debug: %+v\nwhile_ip=%+v\n", program[while_if_ip], while_if_ip)
                 util.TerminateWithError(token.FilePath, token.Row, "`do` can only be used after `while`, `if`, `elif`")
             }
 
             stack.Push(ip)
+        } else if op.Op == constants.OP_CONST {
+            token, tokenList = tokenList[0], tokenList[1:]
+            var constName = token
+
+            if constName.TokenWord.Type != constants.TOKEN_WORD {
+                errorString := fmt.Sprintf("expected const name to be a word but found %+v", constName.TokenWord.Value)
+                util.TerminateWithError(constName.FilePath, constName.Row, errorString)
+            }
+
+            constNameString := constName.TokenWord.Value.(string)
+
+            if _, ok := constants.BUILTIN_WORDS[constNameString]; ok {
+                errorString := fmt.Sprintf("redefinition of builtin word %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+
+            if _, ok := consts[constNameString]; ok {
+                errorString := fmt.Sprintf("redefinition of const region %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+
+            if _, ok := macros[constNameString]; ok {
+                errorString := fmt.Sprintf("redefinition of macro as a const %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+
+            var nextToken model.Token
+            if len(tokenList) == 0 {
+                errorString := fmt.Sprintf("const definition incomplete %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+
+            nextToken, tokenList = tokenList[0], tokenList[1:]
+
+            if nextToken.TokenWord.Type == constants.TOKEN_INT {
+                val := nextToken.TokenWord.Value.(int64)
+                consts[constNameString] = val
+            } else {
+                errorString := fmt.Sprintf("unsupported keyword inside const definition %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+            
+            if len(tokenList) == 0 {
+                errorString := fmt.Sprintf("const definition incomplete %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+
+            nextToken, tokenList = tokenList[0], tokenList[1:]
+
+            if nextToken.TokenWord.Type == constants.TOKEN_WORD {
+                val := nextToken.TokenWord.Value.(string)
+                if val != "end" {
+                    errorString := fmt.Sprintf("const definition must end %+v", constName.TokenWord.Value)
+                    util.TerminateWithError(token.FilePath, token.Row, errorString)
+                }
+            } else {
+                errorString := fmt.Sprintf("unsupported keyword inside const definition %+v", constName.TokenWord.Value)
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+
         } else if op.Op == constants.OP_MEMORY {
             token, tokenList = tokenList[0], tokenList[1:]
             var memoryName = token
@@ -200,20 +262,17 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
 
             memoryNameString := memoryName.TokenWord.Value.(string)
 
-            _, ok := constants.BUILTIN_WORDS[memoryNameString]
-            if ok {
+            if _, ok := constants.BUILTIN_WORDS[memoryNameString]; ok {
                 errorString := fmt.Sprintf("redefinition of builtin word %+v", memoryName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
-            _, ok = memory[memoryNameString]
-            if ok {
+            if _, ok := memory[memoryNameString]; ok {
                 errorString := fmt.Sprintf("redefinition of memory region %+v", memoryName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
-            _, ok = macros[memoryNameString]
-            if ok {
+            if _, ok := macros[memoryNameString]; ok {
                 errorString := fmt.Sprintf("redefinition of macro as a memory region %+v", memoryName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
@@ -230,19 +289,10 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                 nextToken, tokenList = tokenList[0], tokenList[1:]
 
                 if nextToken.TokenWord.Type == constants.TOKEN_WORD {
-                    nextTokenString := nextToken.TokenWord.Value.(string)
-                    if nextTokenString == "end" {
-                        break
-                    } else {
-                        errorString := fmt.Sprintf("unsupported keyword inside memory definition %+v", memoryName.TokenWord.Value)
-                        util.TerminateWithError(token.FilePath, token.Row, errorString)
-                    }
-                } else if nextToken.TokenWord.Type == constants.TOKEN_INT {
-                    val := nextToken.TokenWord.Value.(int64)
-                    memoryStack.Push(int(val))
-                } else if nextToken.TokenWord.Type == constants.TOKEN_WORD {
                     tokenValue := nextToken.TokenWord.Value.(string)
-                    if tokenValue == "+" {
+                    if tokenValue == "end" {
+                        break
+                    } else if tokenValue == "+" {
                         if memoryStack.Size() < 2 {
                             errorString := fmt.Sprintf("operation + requires 2 arguments but found %d\n", memoryStack.Size())
                             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -258,23 +308,27 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                         a := memoryStack.Pop() 
                         b := memoryStack.Pop()
                         memoryStack.Push(a * b)
+                    } else if val, ok := consts[tokenValue]; ok {
+                        memoryStack.Push(int(val))
                     } else {
-                        errorString := fmt.Sprintf("unsupported operation inside memory definition %+v", memoryName.TokenWord.Value)
+                        errorString := fmt.Sprintf("unsupported keyword inside memory definition %+v", memoryName.TokenWord.Value)
                         util.TerminateWithError(token.FilePath, token.Row, errorString)
                     }
+                } else if nextToken.TokenWord.Type == constants.TOKEN_INT {
+                    val := nextToken.TokenWord.Value.(int64)
+                    memoryStack.Push(int(val))
                 } else {
                     errorString := fmt.Sprintf("unsupported token inside memory definition %+v", memoryName.TokenWord.Value)
                     util.TerminateWithError(token.FilePath, token.Row, errorString)
                 }
-
-                if memoryStack.Size() < 1 {
-                    errorString := fmt.Sprintf("memory definition leaves no value after evaluation")
-                    util.TerminateWithError(token.FilePath, token.Row, errorString)
-                }
-                memorySize := memoryStack.Pop()
-                memory[memoryNameString] = memoryPtr
-                memoryPtr += int(memorySize)
             }
+            if memoryStack.Size() < 1 {
+                errorString := fmt.Sprintf("memory definition leaves no value after evaluation")
+                util.TerminateWithError(token.FilePath, token.Row, errorString)
+            }
+            memorySize := memoryStack.Pop()
+            memory[memoryNameString] = memoryPtr
+            memoryPtr += int(memorySize)
         } else if op.Op == constants.OP_MACRO {
             token, tokenList = tokenList[0], tokenList[1:]
             var macroName = token

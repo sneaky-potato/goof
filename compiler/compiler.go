@@ -76,7 +76,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("    mov [args_ptr], rsp\n")
 
     ip := 0
-    if constants.COUNT_OPS != 46 {
+    if constants.COUNT_OPS != 47 {
         panic("Exhaustive handling in compilation")
     }
 
