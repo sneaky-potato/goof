@@ -20,23 +20,24 @@ var consts = make(map[string]int64)
 var procs = make(map[string]int)
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 50 {
+    if constants.COUNT_OPS != 51 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
     if token.TokenWord.Type == constants.TOKEN_WORD {
-        if val, ok := constants.BUILTIN_WORDS[token.TokenWord.Value.(string)]; ok {
+        tokenString := token.TokenWord.Value.(string)
+        if val, ok := constants.BUILTIN_WORDS[tokenString]; ok {
             if val == constants.OP_HERE {
                 msg := token.FilePath + ":" + strconv.Itoa(token.Row)
                 return model.Operation{ constants.OP_PUSH_STR, msg, -1, token.FilePath, token.Row }
             }
             return model.Operation{ val, 0, -1, token.FilePath, token.Row }
-        } else if val, ok := memory[token.TokenWord.Value.(string)]; ok {
+        } else if val, ok := memory[tokenString]; ok {
             return model.Operation{ constants.OP_PUSH_PTR, val, -1, token.FilePath, token.Row }
-        } else if val, ok := consts[token.TokenWord.Value.(string)]; ok {
+        } else if val, ok := consts[tokenString]; ok {
             return model.Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
-        } else if val, ok := procs[token.TokenWord.Value.(string)]; ok {
-            return model.Operation{ constants.OP_CALL, val, -1, token.FilePath, token.Row }
+        } else if val, ok := procs[tokenString]; ok {
+            return model.Operation{ constants.OP_CALL, tokenString, val, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -85,7 +86,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     macros := make(map[string][]model.Token)
     memoryPtr := 0
 
-    if constants.COUNT_OPS != 50 {
+    if constants.COUNT_OPS != 51 {
         panic("Exhaustive handling inside compileTokenList")
     }
 
@@ -176,7 +177,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                         program[elifStack.Pop()].Jump = ip
                     }
                 }
-            } else if program[block_ip].Op == constants.OP_PROC {
+            } else if program[block_ip].Op == constants.OP_SKIP_PROC {
                 program[block_ip].Jump = ip + 1
                 program = append(program, model.Operation{constants.OP_RET, 0, -1, token.FilePath, token.Row})
             } else {
@@ -337,7 +338,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             memorySize := memoryStack.Pop()
             memory[memoryNameString] = memoryPtr
             memoryPtr += int(memorySize)
-        } else if op.Op == constants.OP_PROC {
+        } else if op.Op == constants.OP_SKIP_PROC {
             token, tokenList = tokenList[0], tokenList[1:]
             var procName = token
 
@@ -350,6 +351,8 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             program[ip].Value = procNameString
             stack.Push(ip)
             procs[procNameString] = ip + 1
+            program = append(program, model.Operation{ constants.OP_PREP_PROC, procNameString, -1, token.FilePath, token.Row })
+            ip += 1
         } else if op.Op == constants.OP_MACRO {
             token, tokenList = tokenList[0], tokenList[1:]
             var macroName = token

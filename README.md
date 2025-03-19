@@ -49,8 +49,10 @@ $ ldd output
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [x] Add editor config for vim and nvim for goof source files, check [vim.goof](./editor/vim.goof)
 - [x] Add support for `elif`
-- [ ] Add local memory
+- [x] Add local memory
 - [ ] Add procedures with parameters and return values
+    - [x] define procedures without type signatures
+    - [ ] add type signatures
 - [ ] Deprecate macros
 - [ ] Self-hosted compiler
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)

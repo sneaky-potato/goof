@@ -1,8 +1,5 @@
-include "std.goof"
-
-
 proc sum
-    +
+    + dump
 end
 
-1 2 sum dump
+1 2 sum

@@ -43,7 +43,8 @@ const (
     OP_LOAD64
     OP_STORE64
 
-    OP_PROC
+    OP_SKIP_PROC
+    OP_PREP_PROC
     OP_RET
     OP_CALL
 
@@ -82,7 +83,7 @@ var BUILTIN_WORDS = map[string]int{
     "macro": OP_MACRO,
     "memory": OP_MEMORY,
     "const": OP_CONST,
-    "proc": OP_PROC,
+    "proc": OP_SKIP_PROC,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,
@@ -116,6 +117,3 @@ var BUILTIN_WORDS = map[string]int{
     "include": OP_INCLUDE,
     "here": OP_HERE,
 }
-
-const MEM_CAPACITY = 640_000
-const STR_CAPACITY = 640_000
