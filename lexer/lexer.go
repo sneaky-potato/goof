@@ -97,7 +97,6 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
 
         if token.TokenWord.Type == constants.TOKEN_WORD {
             if val, ok := macros[token.TokenWord.Value.(string)]; ok {
-
                 if token.TokenWord.Expanded >= 35 {
                     errorString := fmt.Sprintf("Reached recursion limit %s", token.TokenWord.Value)
                     util.TerminateWithError(token.FilePath, token.Row, errorString)
@@ -364,20 +363,17 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
 
             macroNameString := macroName.TokenWord.Value.(string)
 
-            _, ok := constants.BUILTIN_WORDS[macroNameString]
-            if ok {
+            if _, ok := constants.BUILTIN_WORDS[macroNameString]; ok {
                 errorString := fmt.Sprintf("redefinition of builtin word %+v", macroName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
-            _, ok = macros[macroNameString]
-            if ok {
+            if _, ok := macros[macroNameString]; ok {
                 errorString := fmt.Sprintf("redefinition of macro %+v", macroName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }
 
-            _, ok = macros[macroNameString]
-            if ok {
+            if _, ok := macros[macroNameString]; ok {
                 errorString := fmt.Sprintf("redefinition of memory region as a macro %+v", macroName.TokenWord.Value)
                 util.TerminateWithError(token.FilePath, token.Row, errorString)
             }

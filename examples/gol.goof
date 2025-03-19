@@ -1,17 +1,17 @@
 include "std.goof"
 
-macro ROWS 8 end
-macro COLS 16 end
-macro PUTD_BUFFER_CAP 32 end
+const ROWS 8 end
+const COLS 16 end
+const PUTD_BUFFER_CAP 32 end
 
-macro nbors mem end
-macro time nbors 8 + end
-macro putd-buffer time 8 + end
-macro matrix nbors PUTD_BUFFER_CAP + end
+memory nbors 8 end
+memory time  8 end
+memory putd-buffer PUTD_BUFFER_CAP end
+memory matrix 0 end
 
 
 // 10 -> "10"
-macro putd
+proc putd
     if dup 0 = do
         "0" puts
     else
@@ -32,7 +32,59 @@ macro putd
    drop
 end
 
-macro display
+proc set_value
+    // value j i
+    COLS * + 8 * matrix + swap .64
+end
+
+proc get_value
+    // j i
+    COLS * + 8 * matrix + ,64
+end
+
+proc mod
+    // a b
+    dup // a b b
+    rot // b a b
+    + // b (a+b)
+    swap
+    %
+end
+
+proc norm
+    // j i
+    ROWS mod // j i%ROWS
+    swap COLS mod // i%ROWS j%COLS
+    swap
+end
+
+proc get_nbor
+    // j i dj di
+    rot rot // j dj di i
+    + rot + // j dj i+di --> i+di j+dj
+    swap
+    norm 
+    get_value
+    if dup 1 = swap 3 = | do
+        nbors ,64 1 + nbors swap .64
+    end
+end
+
+proc count_nbors
+    nbors 0 .64 // nbors
+    // j i
+    2dup -1 -1 get_nbor
+    2dup 0 -1 get_nbor
+    2dup 1 -1 get_nbor
+    2dup -1 0 get_nbor
+    2dup 1 0 get_nbor
+    2dup -1 1 get_nbor
+    2dup 0 1 get_nbor
+    2dup 1 1 get_nbor
+    drop drop
+end
+
+proc display
     ROWS 0
     // ROWS i
     while 2dup > do
@@ -58,59 +110,7 @@ macro display
     drop drop
 end
 
-macro set_value
-    // value j i
-    COLS * + 8 * matrix + swap .64
-end
-
-macro get_value
-    // j i
-    COLS * + 8 * matrix + ,64
-end
-
-macro mod
-    // a b
-    dup // a b b
-    rot // b a b
-    + // b (a+b)
-    swap
-    %
-end
-
-macro norm
-    // j i
-    ROWS mod // j i%ROWS
-    swap COLS mod // i%ROWS j%COLS
-    swap
-end
-
-macro get_nbor
-    // j i dj di
-    rot rot // j dj di i
-    + rot + // j dj i+di --> i+di j+dj
-    swap
-    norm 
-    get_value
-    if dup 1 = swap 3 = | do
-        nbors ,64 1 + nbors swap .64
-    end
-end
-
-macro count_nbors
-    nbors 0 .64 // nbors
-    // j i
-    2dup -1 -1 get_nbor
-    2dup 0 -1 get_nbor
-    2dup 1 -1 get_nbor
-    2dup -1 0 get_nbor
-    2dup 1 0 get_nbor
-    2dup -1 1 get_nbor
-    2dup 0 1 get_nbor
-    2dup 1 1 get_nbor
-    drop drop
-end
-
-macro next
+proc next
     ROWS 0
     // ROWS i
     while 2dup > do

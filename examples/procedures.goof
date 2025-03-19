@@ -1,5 +1,9 @@
-proc sum
-    + dump
+proc hello
+    "Hello " 1 1 syscall3
 end
 
-1 2 sum
+proc procedures
+    "procedures\n" 1 1 syscall3
+end
+
+hello procedures
