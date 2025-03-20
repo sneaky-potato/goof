@@ -22,6 +22,7 @@ func callCmd(cmd string, args ...string) {
     fmt.Println(args)
 
     if err := command.Run(); err != nil {
+        fmt.Printf("%s", errb.String())
         log.Fatal(err)
     }
 
@@ -29,49 +30,37 @@ func callCmd(cmd string, args ...string) {
 }
 
 func usage(program string) {
-	fmt.Printf("Usage: %s <OPTION> [ARGS]\n", program)
-	fmt.Println("OPTIONS:")
-	fmt.Println("    sim <file>         Simulate program")
-	fmt.Println("    com <file>         Compile program")
-	fmt.Println("        SUBOPTIONS:")
-	fmt.Println("            -r         run the program after successful compilation")
-	fmt.Println("            -skip-type skip static type checking before compilation")
+	fmt.Printf("Usage: %s [ARGS] <file>\n", program)
+	fmt.Println("ARGUMENTS:")
+	fmt.Println("    -r         run the program after successful compilation")
+	fmt.Println("    -unsafe    run in UNSAFE mode - skip static type checking before compilation")
 }
 
 func main() {
-    simCmd := flag.NewFlagSet("sim", flag.ExitOnError)
-    comCmd := flag.NewFlagSet("com", flag.ExitOnError)
-    runOnCom := comCmd.Bool("r", false, "run")
-    skipTypeChecking := comCmd.Bool("skip-type", false, "skip static type checking")
+    runOnCom := flag.Bool("r", false, "run")
+    skipTypeChecking := flag.Bool("unsafe", false, "skip static type checking [UNSAFE]")
     
     if len(os.Args) < 2 {
-        fmt.Println("expected subcommand")
+        fmt.Println("expected <file>")
+        usage(os.Args[0])
         os.Exit(1)
     }
 
-    switch os.Args[1] {
-    case "sim":
-        simCmd.Parse(os.Args[2:])
-        filePath := simCmd.Args()[0]
-        _ = lexer.LoadProgramFromFile(filePath)
-    case "com":
-        comCmd.Parse(os.Args[2:])
-        filePath := comCmd.Args()[0]
-        program := lexer.LoadProgramFromFile(filePath)
+    flag.Parse()
 
-        if *skipTypeChecking == false {
-            types.TypeCheckingProgram(program)
-        }
+    filePath := flag.Args()[0]
+    program := lexer.LoadProgramFromFile(filePath)
 
-        compiler.CompileToAsm("output.asm", program)
+    if *skipTypeChecking == false {
+        types.TypeCheckingProgram(program)
+    }
 
-        callCmd("nasm", "-felf64", "output.asm")
-        callCmd("ld", "-o", "output", "output.o")
+    compiler.CompileToAsm("output.asm", program)
 
-        if *runOnCom {
-            callCmd("./output", comCmd.Args()[1:]...)
-        }
-    default:
-        usage(os.Args[0])
+    callCmd("nasm", "-felf64", "output.asm")
+    callCmd("ld", "-o", "output", "output.o")
+
+    if *runOnCom {
+        callCmd("./output", flag.Args()[1:]...)
     }
 }

@@ -84,6 +84,7 @@ var BUILTIN_WORDS = map[string]int{
     "memory": OP_MEMORY,
     "const": OP_CONST,
     "proc": OP_SKIP_PROC,
+    "ret": OP_RET,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,

@@ -53,7 +53,9 @@ $ ldd output
     - [ ] refactor all goof files to use `memory`
 - [ ] Add procedures with parameters and return values
     - [x] define procedures without type signatures
+    - [ ] implement return keyword
     - [ ] add type signatures
+    - [ ] draw a control flow for procedure calling and document everything
 - [ ] Deprecate macros
 - [ ] Self-hosted compiler
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
