@@ -1,0 +1,21 @@
+include "string.goof"
+
+memory content sizeof(str) end
+memory line    sizeof(str) end
+memory word    sizeof(str) end
+
+"hello world\ngoodbye world" content store_str
+
+"CONTENT:\n" 1 1 syscall3 drop
+content read_str 1 1 syscall3 drop
+"\n" 1 1 syscall3 drop
+
+line content str_chop_line
+"LINE: " 1 1 syscall3 drop
+line read_str 1 1 syscall3 drop
+"\n" 1 1 syscall3 drop
+
+word line str_chop_word
+"WORD: " 1 1 syscall3 drop
+word read_str 1 1 syscall3 drop
+"\n" 1 1 syscall3 drop
