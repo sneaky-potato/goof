@@ -1,0 +1,9 @@
+proc hello -- --
+    "Hello " 1 1 syscall3 drop
+end
+
+proc procedures -- --
+    "procedures\n" 1 1 syscall3 drop
+end
+
+hello procedures
