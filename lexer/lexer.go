@@ -20,7 +20,7 @@ var consts = make(map[string]int64)
 var procs = make(map[string]int)
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 51 {
+    if constants.COUNT_OPS != 55 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -78,6 +78,39 @@ func expandMacro(macroTokens []model.Token, expanded int) []model.Token {
     return macroTokens
 }
 
+func checkTokenRedifinition(token model.Token, macros map[string][]model.Token, consts map[string]int64, memory map[string]int, procs map[string]int) {
+    if token.TokenWord.Type != constants.TOKEN_WORD {
+        errorString := fmt.Sprintf("expected word but found %+v", token.TokenWord.Value)
+        util.TerminateWithError(token.FilePath, token.Row, errorString)
+    }
+
+    tokenNameString := token.TokenWord.Value.(string)
+
+    if _, ok := constants.BUILTIN_WORDS[tokenNameString]; ok {
+        errorString := fmt.Sprintf("redefinition of builtin word %+v", token.TokenWord.Value)
+        util.TerminateWithError(token.FilePath, token.Row, errorString)
+    }
+
+    if _, ok := consts[tokenNameString]; ok {
+        errorString := fmt.Sprintf("redefinition of const %+v", token.TokenWord.Value)
+        util.TerminateWithError(token.FilePath, token.Row, errorString)
+    }
+
+    if _, ok := macros[tokenNameString]; ok {
+        errorString := fmt.Sprintf("redefinition of macro %+v", token.TokenWord.Value)
+        util.TerminateWithError(token.FilePath, token.Row, errorString)
+    }
+
+    if _, ok := memory[tokenNameString]; ok {
+        errorString := fmt.Sprintf("redefinition of token region %+v", token.TokenWord.Value)
+        util.TerminateWithError(token.FilePath, token.Row, errorString)
+    }
+
+    if _, ok := procs[tokenNameString]; ok {
+        errorString := fmt.Sprintf("redefinition of procedure %+v", token.TokenWord.Value)
+        util.TerminateWithError(token.FilePath, token.Row, errorString)
+    }
+}
 
 func compileTokenList(tokenList []model.Token) []model.Operation {
     var stack = new(util.Stack[int])
@@ -86,7 +119,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     macros := make(map[string][]model.Token)
     memoryPtr := 0
 
-    if constants.COUNT_OPS != 51 {
+    if constants.COUNT_OPS != 55 {
         panic("Exhaustive handling inside compileTokenList")
     }
 
@@ -203,27 +236,9 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             token, tokenList = tokenList[0], tokenList[1:]
             var constName = token
 
-            if constName.TokenWord.Type != constants.TOKEN_WORD {
-                errorString := fmt.Sprintf("expected const name to be a word but found %+v", constName.TokenWord.Value)
-                util.TerminateWithError(constName.FilePath, constName.Row, errorString)
-            }
+            checkTokenRedifinition(token, macros, consts, memory, procs)
 
             constNameString := constName.TokenWord.Value.(string)
-
-            if _, ok := constants.BUILTIN_WORDS[constNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of builtin word %+v", constName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
-
-            if _, ok := consts[constNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of const region %+v", constName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
-
-            if _, ok := macros[constNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of macro as a const %+v", constName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
 
             var nextToken model.Token
             if len(tokenList) == 0 {
@@ -263,27 +278,9 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             token, tokenList = tokenList[0], tokenList[1:]
             var memoryName = token
 
-            if memoryName.TokenWord.Type != constants.TOKEN_WORD {
-                errorString := fmt.Sprintf("expected memory name to be a word but found %+v", memoryName.TokenWord.Value)
-                util.TerminateWithError(memoryName.FilePath, memoryName.Row, errorString)
-            }
+            checkTokenRedifinition(token, macros, consts, memory, procs)
 
             memoryNameString := memoryName.TokenWord.Value.(string)
-
-            if _, ok := constants.BUILTIN_WORDS[memoryNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of builtin word %+v", memoryName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
-
-            if _, ok := memory[memoryNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of memory region %+v", memoryName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
-
-            if _, ok := macros[memoryNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of macro as a memory region %+v", memoryName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
 
             var nextToken model.Token
             if len(tokenList) == 0 {
@@ -341,10 +338,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             token, tokenList = tokenList[0], tokenList[1:]
             var procName = token
 
-            if procName.TokenWord.Type != constants.TOKEN_WORD {
-                errorString := fmt.Sprintf("expected proc name to be a word but found %+v", procName.TokenWord.Value)
-                util.TerminateWithError(procName.FilePath, procName.Row, errorString)
-            }
+            checkTokenRedifinition(token, macros, consts, memory, procs)
 
             procNameString := procName.TokenWord.Value.(string)
             program[ip].Value = procNameString
@@ -356,27 +350,9 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
             token, tokenList = tokenList[0], tokenList[1:]
             var macroName = token
 
-            if macroName.TokenWord.Type != constants.TOKEN_WORD {
-                errorString := fmt.Sprintf("expected macro name to be a word but found %+v", macroName.TokenWord.Value)
-                util.TerminateWithError(macroName.FilePath, macroName.Row, errorString)
-            }
+            checkTokenRedifinition(token, macros, consts, memory, procs)
 
             macroNameString := macroName.TokenWord.Value.(string)
-
-            if _, ok := constants.BUILTIN_WORDS[macroNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of builtin word %+v", macroName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
-
-            if _, ok := macros[macroNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of macro %+v", macroName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
-
-            if _, ok := macros[macroNameString]; ok {
-                errorString := fmt.Sprintf("redefinition of memory region as a macro %+v", macroName.TokenWord.Value)
-                util.TerminateWithError(token.FilePath, token.Row, errorString)
-            }
 
             var nextToken model.Token
             if len(tokenList) == 0 {
@@ -402,7 +378,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                     break
                 }
 
-                macros[macroName.TokenWord.Value.(string)] = append(macros[macroName.TokenWord.Value.(string)], nextToken)
+                macros[macroNameString] = append(macros[macroNameString], nextToken)
             }
 
             if nextToken.TokenWord.Type != constants.TOKEN_WORD || nextToken.TokenWord.Value.(string) != "end" {

@@ -78,7 +78,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("    mov [ret_stack_rsp], rax\n")
 
     ip := 0
-    if constants.COUNT_OPS != 51 {
+    if constants.COUNT_OPS != 55 {
         panic("Exhaustive handling in compilation")
     }
 

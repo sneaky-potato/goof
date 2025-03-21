@@ -54,8 +54,9 @@ $ ldd output
 - [ ] Add procedures with parameters and return values
     - [x] define procedures without type signatures
     - [x] implement return keyword
-    - [ ] add type signatures
-    - [ ] clean function stack after return
+    - [x] add type signatures
+    - [ ] add type checking inside function (context stack)
+    - [ ] add local memory and clean function stack after return
     - [ ] draw a control flow for procedure calling and document everything
 - [ ] Deprecate macros
 - [ ] Use goroutines for lexical scanning check [ref](https://www.youtube.com/watch?v=HxaD_trXwRE)

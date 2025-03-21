@@ -20,6 +20,13 @@ type typedOperand struct {
     row      int
 }
 
+type proc struct {
+    inputs  []int
+    outputs []int
+}
+
+var procs = make(map[string]proc)
+
 func stackEqual(s util.Stack[typedOperand], r util.Stack[typedOperand]) bool {
     i := 0
     if s.Size() != r.Size() {
@@ -75,12 +82,12 @@ func getStringFromOperands(typedOperands ...typedOperand) string {
 func TypeCheckingProgram(program []model.Operation) {
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
-    var ip int = 0
-    if constants.COUNT_OPS != 51 {
+    if constants.COUNT_OPS != 55 {
         panic("Exhaustive handling inside TypeCheckingProgram")
     }
-    for ip < len(program) {
-        op := program[ip]
+    var op model.Operation
+    for len(program) > 0 {
+        op, program = program[0], program[1:]
         switch op.Op {
         case constants.OP_PUSH_INT:
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
@@ -385,6 +392,74 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(stack.Size(), 1, op, "cast(int)")
             stack.Pop()
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_PREP_PROC:
+            var nextOp model.Operation
+            var procNameString = op.Value.(string)
+            procs[procNameString] = proc{ make([]int, 0), make([]int, 0) }
+            for len(program) > 0 {
+                nextOp, program = program[0], program[1:]
+                if nextOp.Op == constants.OP_PROC_SEP {
+                    break
+                } else if nextOp.Op == constants.OP_TYPE_BOOL || nextOp.Op == constants.OP_TYPE_INT || nextOp.Op == constants.OP_TYPE_PTR {
+                    if entry, ok := procs[procNameString]; ok {
+                        entry.inputs = append(entry.inputs, nextOp.Op)
+                        procs[procNameString] = entry
+                    }
+                } else {
+                    util.TerminateWithError(op.FilePath, op.Row, "expected type signature for procedure call\n")
+                }
+            }
+
+            for len(program) > 0 {
+                nextOp, program = program[0], program[1:]
+                if nextOp.Op == constants.OP_PROC_SEP {
+                    break
+                } else if nextOp.Op == constants.OP_TYPE_BOOL || nextOp.Op == constants.OP_TYPE_INT || nextOp.Op == constants.OP_TYPE_PTR {
+                    if entry, ok := procs[procNameString]; ok {
+                        entry.outputs = append(entry.outputs, nextOp.Op)
+                        procs[procNameString] = entry
+                    }
+                } else {
+                    util.TerminateWithError(op.FilePath, op.Row, "expected type signature for procedure call\n")
+                }
+            }
+
+            funcStack := 0
+
+            for len(program) > 0 {
+                nextOp, program = program[0], program[1:]
+                if nextOp.Op == constants.OP_END {
+                    funcStack -= 1
+                    if funcStack == 0 {
+                        break
+                    }
+                } else if nextOp.Op == constants.OP_IF || nextOp.Op == constants.OP_WHILE {
+                    funcStack += 1
+                }
+            }
+        case constants.OP_CALL:
+            util.CheckNumberOfArguments(stack.Size(), len(procs[op.Value.(string)].inputs), op, op.Value.(string))
+            for _, in := range procs[op.Value.(string)].inputs {
+                a := stack.Pop()
+                if in == constants.OP_TYPE_INT && a.typ == TYPE_INT {
+                } else if in == constants.OP_TYPE_PTR && a.typ == TYPE_PTR {
+                } else if in == constants.OP_TYPE_BOOL && a.typ == TYPE_BOOL {
+                } else {
+                    foundArguments := a.getTypedString()
+                    util.TerminateWithError(op.FilePath, op.Row, "unexpected input for procedure call: " + foundArguments + "\n")
+                }
+            }
+            for in := range procs[op.Value.(string)].outputs {
+                if in == constants.OP_TYPE_INT {
+                    stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+                } else if in == constants.OP_TYPE_PTR {
+                    stack.Push(typedOperand{ TYPE_PTR, op.FilePath, op.Row })
+                } else if in == constants.OP_TYPE_BOOL {
+                    stack.Push(typedOperand{ TYPE_BOOL, op.FilePath, op.Row })
+                } else {
+                    panic("unreachable code")
+                }
+            }
         case constants.OP_ARGC:
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_ARGV:
@@ -419,7 +494,6 @@ func TypeCheckingProgram(program []model.Operation) {
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         default:
         }
-        ip += 1
     }
     if stack.Size() > 0 {
         errorString := fmt.Sprintf("unhandled data on stack: [ ")

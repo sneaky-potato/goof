@@ -48,12 +48,14 @@ const (
     OP_RET
     OP_CALL
 
+    OP_PROC_SEP
+
     OP_CAST_INT
     OP_CAST_PTR
     OP_CAST_BOOL
-    // OP_TYPE_INT
-    // OP_TYPE_PTR
-    // OP_TYPE_BOOL
+    OP_TYPE_INT
+    OP_TYPE_PTR
+    OP_TYPE_BOOL
 
     OP_SYSCALL1
     OP_SYSCALL2
@@ -105,9 +107,10 @@ var BUILTIN_WORDS = map[string]int{
     "(int)": OP_CAST_INT,
     "(ptr)": OP_CAST_PTR,
     "(bool)": OP_CAST_BOOL,
-    // "int": OP_TYPE_INT,
-    // "ptr": OP_TYPE_PTR,
-    // "bool": OP_TYPE_BOOL,
+    "int": OP_TYPE_INT,
+    "ptr": OP_TYPE_PTR,
+    "bool": OP_TYPE_BOOL,
+    "--": OP_PROC_SEP,
     "syscall1": OP_SYSCALL1,
     "syscall2": OP_SYSCALL2,
     "syscall3": OP_SYSCALL3,
