@@ -424,7 +424,7 @@ func TypeCheckingProgram(program []model.Operation) {
                 }
             }
 
-            funcStack := 0
+            funcStack := 1
 
             for len(program) > 0 {
                 nextOp, program = program[0], program[1:]

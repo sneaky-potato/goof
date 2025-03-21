@@ -11,7 +11,7 @@ memory matrix 0 end
 
 
 // 10 -> "10"
-proc putd
+proc putd int -- --
     if dup 0 = do
         "0" puts
     else
@@ -32,17 +32,17 @@ proc putd
    drop
 end
 
-proc set_value
+proc set_value int int ptr -- --
     // value j i
     COLS * + 8 * matrix + swap .64
 end
 
-proc get_value
+proc get_value int int -- --
     // j i
     COLS * + 8 * matrix + ,64
 end
 
-proc mod
+proc mod int int -- int --
     // a b
     dup // a b b
     rot // b a b
@@ -51,14 +51,14 @@ proc mod
     %
 end
 
-proc norm
+proc norm int int -- int int --
     // j i
     ROWS mod // j i%ROWS
     swap COLS mod // i%ROWS j%COLS
     swap
 end
 
-proc get_nbor
+proc get_nbor int int int int -- int --
     // j i dj di
     rot rot // j dj di i
     + rot + // j dj i+di --> i+di j+dj
@@ -70,7 +70,7 @@ proc get_nbor
     end
 end
 
-proc count_nbors
+proc count_nbors int int -- int --
     nbors 0 .64 // nbors
     // j i
     2dup -1 -1 get_nbor
@@ -84,7 +84,7 @@ proc count_nbors
     drop drop
 end
 
-proc display
+proc display -- --
     ROWS 0
     // ROWS i
     while 2dup > do
@@ -110,7 +110,7 @@ proc display
     drop drop
 end
 
-proc next
+proc next -- --
     ROWS 0
     // ROWS i
     while 2dup > do
