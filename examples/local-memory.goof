@@ -1,0 +1,24 @@
+include "std.goof"
+
+memory memcpy_size 8 end
+memory memcpy_src  8 end
+memory memcpy_dst  8 end
+
+macro memcpy // src dst
+    memcpy_dst swap .64
+    memcpy_src swap .64
+
+    0 while dup memcpy_size ,64 < do
+        dup  memcpy_src ,64 + (ptr) ,
+        over memcpy_dst ,64 + (ptr) swap .
+        1 +
+    end drop
+end
+
+memory hello 256 end
+memcpy_size 256 .64
+"Hello world\n" hello 
+memcpy
+
+hello puts
+ 

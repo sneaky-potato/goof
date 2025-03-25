@@ -5,7 +5,7 @@
 goof or goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go.
 
 I made this contraption to learn more about compilers and computer architecture.
-I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
+I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` linux for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
 
 ## Idea
 
@@ -16,8 +16,8 @@ Majority of the project has been inspired from [tsoding](https://www.youtube.com
 ## Usage
 
 You would require the following for compiling the language to a 64 bit ELF executable file.
-- [go](https://go.dev/)
-- [nasm](https://nasm.us/): Netwide Assembler is being used to generate the object file for `x86_64` architecture after translating the language to assembly.
+- [go](https://go.dev/): at the time of writing, I have used `1.23.3` version
+- [nasm](https://nasm.us/): Netwide Assembler is being used to generate the object file for `x86_64` architecture by taking the assembly output.
 - [ld](https://linux.die.net/man/1/ld): For linking the generated object file to final ELF executable.
 
 The following flowchart summarizes the workflow
@@ -47,11 +47,20 @@ $ ldd output
 - [x] Native
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
-- [x] Add editor config for vim and nvim for goof source files, check [vim.goof](./editor/vim.goof)
+- [x] Add editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
 - [x] Add support for `elif`
-- [ ] Add local memory
+- [x] Add local memory
+    - [ ] refactor all goof files to use `memory`
 - [ ] Add procedures with parameters and return values
+    - [x] define procedures without type signatures
+    - [x] implement return keyword
+    - [x] add type signatures
+    - [ ] add type checking inside function (context stack)
+    - [ ] add local memory and clean function stack after return
+    - [ ] draw a control flow for procedure calling and document everything
 - [ ] Deprecate macros
+    - [ ] add offset keyword for defining memory offsets for structs
+- [ ] Use goroutines for lexical scanning check [ref](https://www.youtube.com/watch?v=HxaD_trXwRE)
 - [ ] Self-hosted compiler
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
     - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)

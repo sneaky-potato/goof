@@ -3,6 +3,7 @@ package constants
 const (
     OP_PUSH_INT = iota
     OP_PUSH_STR
+    OP_PUSH_PTR
 
     OP_PLUS
     OP_MINUS
@@ -21,6 +22,8 @@ const (
     OP_WHILE
     OP_DO
     OP_MACRO
+    OP_MEMORY
+    OP_CONST
 
     OP_DUP
     OP_2DUP
@@ -40,9 +43,19 @@ const (
     OP_LOAD64
     OP_STORE64
 
+    OP_SKIP_PROC
+    OP_PREP_PROC
+    OP_RET
+    OP_CALL
+
+    OP_PROC_SEP
+
     OP_CAST_INT
     OP_CAST_PTR
     OP_CAST_BOOL
+    OP_TYPE_INT
+    OP_TYPE_PTR
+    OP_TYPE_BOOL
 
     OP_SYSCALL1
     OP_SYSCALL2
@@ -70,6 +83,10 @@ var BUILTIN_WORDS = map[string]int{
     "while": OP_WHILE,
     "do": OP_DO,
     "macro": OP_MACRO,
+    "memory": OP_MEMORY,
+    "const": OP_CONST,
+    "proc": OP_SKIP_PROC,
+    "ret": OP_RET,
     "dup": OP_DUP,
     "2dup": OP_2DUP,
     "swap": OP_SWAP,
@@ -90,6 +107,10 @@ var BUILTIN_WORDS = map[string]int{
     "(int)": OP_CAST_INT,
     "(ptr)": OP_CAST_PTR,
     "(bool)": OP_CAST_BOOL,
+    "int": OP_TYPE_INT,
+    "ptr": OP_TYPE_PTR,
+    "bool": OP_TYPE_BOOL,
+    "--": OP_PROC_SEP,
     "syscall1": OP_SYSCALL1,
     "syscall2": OP_SYSCALL2,
     "syscall3": OP_SYSCALL3,
@@ -100,6 +121,3 @@ var BUILTIN_WORDS = map[string]int{
     "include": OP_INCLUDE,
     "here": OP_HERE,
 }
-
-const MEM_CAPACITY = 640_000
-const STR_CAPACITY = 640_000

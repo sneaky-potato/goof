@@ -74,14 +74,20 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("global _start\n")
     out.WriteString("_start:\n")
     out.WriteString("    mov [args_ptr], rsp\n")
+    out.WriteString("    mov rax, ret_stack_end\n")
+    out.WriteString("    mov [ret_stack_rsp], rax\n")
 
     ip := 0
-    if constants.COUNT_OPS != 44 {
+    if constants.COUNT_OPS != 55 {
         panic("Exhaustive handling in compilation")
     }
 
     for ip < len(program) {
-        out.WriteString(fmt.Sprintf("addr_%d:\n", ip))
+        if program[ip].Op == constants.OP_PREP_PROC {
+            out.WriteString(fmt.Sprintf("%s:\n", program[ip].Value))
+        } else {
+            out.WriteString(fmt.Sprintf("addr_%d:\n", ip))
+        }
         operation := program[ip]
         switch operation.Op {
         case constants.OP_PUSH_INT:
@@ -96,6 +102,11 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    push rax\n")
             out.WriteString(fmt.Sprintf("    push str_%d\n", len(strs)))
             strs = append(strs, val)
+        case constants.OP_PUSH_PTR:
+            out.WriteString(fmt.Sprintf("    ;; -- push mem + %d --\n", operation.Value))
+            out.WriteString(fmt.Sprintf("    mov rax, mem\n"))
+            out.WriteString(fmt.Sprintf("    add rax, %d\n", operation.Value))
+            out.WriteString("    push rax\n")
         case constants.OP_PLUS:
             out.WriteString("    ;; -- plus --\n")
             out.WriteString("    pop rax\n")
@@ -255,6 +266,28 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
                 panic("`do` instruction does not have reference to end of its block, please use end after else")
             }
             out.WriteString(fmt.Sprintf("    jz addr_%d\n", operation.Jump))
+        case constants.OP_SKIP_PROC:
+            out.WriteString("    ;; -- skip proc --\n")
+            out.WriteString(fmt.Sprintf("    jmp addr_%d\n", operation.Jump))
+        case constants.OP_PREP_PROC:
+            out.WriteString("    ;; -- prep proc --\n")
+            out.WriteString("    mov [ret_stack_rsp], rsp\n")
+            out.WriteString("    mov rsp, rax\n")
+        case constants.OP_RET:
+            out.WriteString("    ;; -- ret --\n")
+            out.WriteString("    mov rax, rsp\n")
+            out.WriteString("    mov rsp, [ret_stack_rsp]\n")
+            out.WriteString("    ret\n")
+        case constants.OP_CALL:
+            out.WriteString(fmt.Sprintf("    ;; -- call %s --\n", operation.Value))
+            out.WriteString("    mov rax, rsp\n")
+            out.WriteString("    mov rsp, [ret_stack_rsp]\n")
+            if operation.Jump < 0 {
+                panic("`call` instruction does not have reference to starting of procedure")
+            }
+            out.WriteString(fmt.Sprintf("    call %s\n", operation.Value))
+            out.WriteString("    mov [ret_stack_rsp], rsp\n")
+            out.WriteString("    mov rsp, rax\n")
         case constants.OP_MEM:
             out.WriteString("    ;; -- mem --\n")
             out.WriteString("    push mem\n")
@@ -344,5 +377,8 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     }
     out.WriteString("segment .bss\n")
     out.WriteString("args_ptr: resq 1\n")
-    out.WriteString(fmt.Sprintf("mem resb %d\n", constants.MEM_CAPACITY))
+    out.WriteString("ret_stack_rsp: resq 1\n")
+    out.WriteString(fmt.Sprintf("ret_stack: resb %d\n", constants.X86_64_RET_STACK_CAP))
+    out.WriteString("ret_stack_end: resq 1\n")
+    out.WriteString(fmt.Sprintf("mem: resb %d\n", constants.MEM_CAPACITY))
 }

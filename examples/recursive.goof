@@ -1,0 +1,10 @@
+proc sum int -- int --
+    if dup 1 < do
+        0 ret
+    end
+    dup 1 - // n n-1
+    sum
+    + ret
+end
+
+10 sum dump
