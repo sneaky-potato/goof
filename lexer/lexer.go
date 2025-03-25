@@ -43,16 +43,14 @@ func ParseTokenAsOp(token model.Token) model.Operation {
             util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_INT {
-        val, ok := token.TokenWord.Value.(int64)
-        if ok {
+        if val, ok := token.TokenWord.Value.(int64); ok {
             return model.Operation{ constants.OP_PUSH_INT, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
             util.TerminateWithError(token.FilePath, token.Row, errorString)
         }
     } else if token.TokenWord.Type == constants.TOKEN_STR {
-        val, ok := token.TokenWord.Value.(string)
-        if ok {
+        if val, ok := token.TokenWord.Value.(string); ok {
             return model.Operation{ constants.OP_PUSH_STR, val, -1, token.FilePath, token.Row }
         } else {
             errorString := fmt.Sprintf("undefined token %s", token.TokenWord.Value)
