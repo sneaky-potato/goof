@@ -59,6 +59,7 @@ $ ldd output
     - [ ] add local memory and clean function stack after return
     - [ ] draw a control flow for procedure calling and document everything
 - [ ] Deprecate macros
+    - [ ] add offset keyword for defining memory offsets for structs
 - [ ] Use goroutines for lexical scanning check [ref](https://www.youtube.com/watch?v=HxaD_trXwRE)
 - [ ] Self-hosted compiler
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
