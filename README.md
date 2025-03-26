@@ -56,7 +56,7 @@ $ ldd output
     - [x] implement return keyword
     - [x] add type signatures
     - [ ] add type checking inside function (context stack)
-    - [ ] add local memory and clean function stack after return
+    - [ ] add local memory and clean function stack after return, check [ref](https://forum.nasm.us/index.php?topic=1611.0)
     - [ ] draw a control flow for procedure calling and document everything
 - [ ] Deprecate macros
     - [ ] add offset keyword for defining memory offsets for structs

@@ -1,9 +1,11 @@
-proc hello -- --
+proc hello -- int --
     "Hello " 1 1 syscall3 drop
+    1 ret
 end
 
-proc procedures -- --
+proc procedures -- int --
     "procedures\n" 1 1 syscall3 drop
+    2 ret
 end
 
-hello procedures
+hello procedures dump dump
