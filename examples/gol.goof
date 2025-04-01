@@ -32,7 +32,7 @@ proc putd int -- --
    drop
 end
 
-proc set_value int int ptr -- --
+proc set_value int int int -- --
     // value j i
     COLS * + 8 * matrix + swap .64
 end

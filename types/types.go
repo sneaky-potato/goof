@@ -392,7 +392,8 @@ func TypeCheckingProgram(program []model.Operation) {
             util.CheckNumberOfArguments(stack.Size(), 1, op, "cast(int)")
             stack.Pop()
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
-        case constants.OP_PREP_PROC:
+        case constants.OP_SKIP_PROC:
+            op, program = program[0], program[1:]
             var nextOp model.Operation
             var procNameString = op.Value.(string)
             procs[procNameString] = proc{ make([]int, 0), make([]int, 0) }
@@ -425,7 +426,6 @@ func TypeCheckingProgram(program []model.Operation) {
             }
 
             funcStack := 1
-
             for len(program) > 0 {
                 nextOp, program = program[0], program[1:]
                 if nextOp.Op == constants.OP_END {
@@ -437,6 +437,10 @@ func TypeCheckingProgram(program []model.Operation) {
                     funcStack += 1
                 }
             }
+            if nextOp.Op != constants.OP_END {
+                panic("did not find end after function body")
+            }
+
         case constants.OP_CALL:
             util.CheckNumberOfArguments(stack.Size(), len(procs[op.Value.(string)].inputs), op, op.Value.(string))
             for _, in := range procs[op.Value.(string)].inputs {
@@ -449,7 +453,7 @@ func TypeCheckingProgram(program []model.Operation) {
                     util.TerminateWithError(op.FilePath, op.Row, "unexpected input for procedure call: " + foundArguments + "\n")
                 }
             }
-            for in := range procs[op.Value.(string)].outputs {
+            for _, in := range procs[op.Value.(string)].outputs {
                 if in == constants.OP_TYPE_INT {
                     stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
                 } else if in == constants.OP_TYPE_PTR {
@@ -497,11 +501,16 @@ func TypeCheckingProgram(program []model.Operation) {
     }
     if stack.Size() > 0 {
         errorString := fmt.Sprintf("unhandled data on stack: [ ")
+        var filePath string
+        var row int
         for stack.Size() > 0 {
-            errorString += stack.Pop().getTypedString()
+            var tO typedOperand = stack.Pop()
+            errorString += tO.getTypedString()
             errorString += " "
+            filePath = tO.filePath
+            row = tO.row
         }
         errorString += "]"
-        util.TerminateWithError(program[len(program) - 1].FilePath, program[len(program) - 1].Row, errorString)
+        util.TerminateWithError(filePath, row, errorString)
     }
 }

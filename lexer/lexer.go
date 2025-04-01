@@ -208,8 +208,10 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
                     }
                 }
             } else if program[block_ip].Op == constants.OP_SKIP_PROC {
-                program[block_ip].Jump = ip + 1
+                program[block_ip].Jump = ip + 2
                 program = append(program, model.Operation{constants.OP_RET, 0, -1, token.FilePath, token.Row})
+                program = append(program, model.Operation{constants.OP_END, 0, ip + 2, token.FilePath, token.Row})
+                ip += 1
             } else {
                 util.TerminateWithError(token.FilePath, token.Row, "`end` can only close `if` `else` `do` `proc` blocks for now")
             }

@@ -11,7 +11,7 @@ proc store_str ptr ptr int -- --
 end
 
 // ptr --> count "string"
-proc read_str ptr -- ptr int
+proc read_str ptr -- ptr int --
     dup str.count ,64
     swap str.data ,64
 end
@@ -28,7 +28,7 @@ macro chop_left // input
     drop
 end
 
-proc str_trim_left ptr -- ptr --
+proc str_trim_left ptr -- --
     while
         if dup str.count ,64 0 > do
             dup str.data ,64 (ptr) , 32 =
@@ -41,7 +41,7 @@ proc str_trim_left ptr -- ptr --
     drop
 end
 
-proc str_chop_line ptr ptr -- ptr ptr --
+proc str_chop_line ptr ptr -- --
     2dup str.data ,64 swap str.data swap .64
     over str.count 0 .64
     while
@@ -62,7 +62,7 @@ proc str_chop_line ptr ptr -- ptr ptr --
     drop drop
 end
 
-proc str_chop_word ptr ptr -- ptr ptr --
+proc str_chop_word ptr ptr -- --
     2dup str.data ,64 swap str.data swap .64
     over str.count 0 .64
     while
