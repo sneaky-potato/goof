@@ -1,4 +1,4 @@
-1 0 > if
+if 1 0 > do
     1 dump
 else
     0 dump
@@ -7,16 +7,15 @@ end
 macro A 1 end
 macro B 0 end
 
-A B > if
+if A B > do
     "A > B\n" 1 1 syscall3
-else A B < if
+elif A B < do
     "A < B\n" 1 1 syscall3
 else
     "A == B\n" 1 1 syscall3
 end
-end
 
-A B != if
+if A B != do
     "A != B\n" 1 1 syscall3 drop
 end
 
