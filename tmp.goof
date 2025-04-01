@@ -1,43 +1,23 @@
 include "std.goof"
 
-macro PUTD_BUFFER_CAP 32 end
-
-macro putd-buffer mem end
-
-// 10 -> "10"
-macro putd
-    dup 0 = if
-        "0" puts
+proc putd int -- --
+    if dup 1 = do
+        "1\n" puts
+    elif dup 2 = do
+        "2\n" puts
     else
-        0 (bool)
-        over 0 < if
-            drop
-            -1 *
-            1 (bool)
-        end swap
-        putd-buffer PUTD_BUFFER_CAP +
-        // flag n ptr
-        while over 0 > do
-            1 - dup rot rot
-            // ptr ptr n
-            10 divmod
-            // ptr ptr n%10 n/10
-            rot rot swap
-            // ptr n/10 ptr n%10
-            48 + . swap
-        end
-        rot rot // n ptr flag
-        if
-            1 - dup 45 .
-        else end
-        // n ptr
-        dup
-        putd-buffer PUTD_BUFFER_CAP + swap - dup dump swap puts
-   end
-   drop
+        "not 1 or 2\n" puts
+    end
+    dump
 end
 
-"-123\x00" stoi putd "\n" puts
-"123\x00" stoi putd "\n" puts
-drop
-drop
+proc hello -- --
+    // value j i
+    5 0 while 2dup > do
+        dup dump
+        1 +
+    end
+end
+
+3 putd
+hello

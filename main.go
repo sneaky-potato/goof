@@ -48,10 +48,16 @@ func main() {
 
     flag.Parse()
 
+    if len(flag.Args()) < 1 {
+        fmt.Println("expected <file>")
+        usage(os.Args[0])
+        os.Exit(1)
+    }
+
     filePath := flag.Args()[0]
     program := lexer.LoadProgramFromFile(filePath)
 
-    if *skipTypeChecking == false {
+    if !(*skipTypeChecking) {
         types.TypeCheckingProgram(program)
     }
 
