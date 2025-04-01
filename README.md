@@ -50,7 +50,6 @@ $ ldd output
 - [x] Add editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
 - [x] Add support for `elif`
 - [x] Add local memory
-    - [ ] refactor all goof files to use `memory`
 - [ ] Add procedures with parameters and return values
     - [x] define procedures without type signatures
     - [x] implement return keyword
