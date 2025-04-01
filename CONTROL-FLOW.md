@@ -71,7 +71,7 @@ _start:
     mov [ret_stack_rsp], rax
 addr_0:
     ;; -- skip proc --
-    jmp addr_13
+    jmp addr_14
 hello:
     ;; -- prep proc --
     mov [ret_stack_rsp], rsp
@@ -80,8 +80,8 @@ addr_2:
 addr_3:
 addr_4:
 addr_5:
-    ;; -- push str Hello  --
-    mov rax, 6
+    ;; -- push str hello world --
+    mov rax, 11
     push rax
     push str_0
 addr_6:
@@ -118,26 +118,54 @@ addr_12:
     mov rsp, [ret_stack_rsp]
     ret
 addr_13:
+    ;; -- end --
+addr_14:
     ;; -- call hello --
     mov rax, rsp
     mov rsp, [ret_stack_rsp]
     call hello
     mov [ret_stack_rsp], rsp
     mov rsp, rax
-addr_14:
-    ;; -- dump --
-    pop rdi
-    call dump
 addr_15:
+    ;; -- drop --
+    pop rax
+addr_16:
     mov rax, 60
     mov rdi, 0
     syscall
 segment .data
-str_0: db 0x48,0x65,0x6c,0x6c,0x6f,0x20
+str_0: db 0x68,0x65,0x6c,0x6c,0x6f,0x20,0x77,0x6f,0x72,0x6c,0x64
 segment .bss
 args_ptr: resq 1
 ret_stack_rsp: resq 1
 ret_stack: resb 4096
 ret_stack_end: resq 1
 mem: resb 640000
+```
+
+```mermaid
+graph TD;
+    pre_proc["`
+        rax &larr; rsp
+        rsp &larr; [ret_stack_rsp]
+    `"]
+    call_proc["call hello"]
+    prep_proc["`
+        [ret_stack_rsp] &larr; rsp
+        rsp &larr; rax
+    `"]
+    body_proc["body of proc"]
+    ret["`
+        rax &larr; rsp
+        rsp &larr; [ret_stack_rsp]
+        ret
+    `"]
+    post_proc["`
+        [ret_stack_rsp] &larr; rsp
+        rsp &larr; rax`"]
+    pre_proc --> call_proc
+    call_proc --> prep_proc
+    prep_proc --> body_proc
+    body_proc --> ret
+    ret --> post_proc
 ```

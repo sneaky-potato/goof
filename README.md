@@ -29,7 +29,7 @@ flowchart LR
 
 For compiling the program written in `test.goof` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
 ```shell
-go run main.go com ./test.goof
+go run main.go ./test.goof
 ./output
 ```
 
@@ -54,9 +54,9 @@ $ ldd output
     - [x] define procedures without type signatures
     - [x] implement return keyword
     - [x] add type signatures
+    - [x] draw a control flow for procedure calling and document everything
     - [ ] add type checking inside function (context stack)
     - [ ] add local memory and clean function stack after return, check [ref](https://forum.nasm.us/index.php?topic=1611.0)
-    - [ ] draw a control flow for procedure calling and document everything
 - [ ] Deprecate macros
     - [ ] add offset keyword for defining memory offsets for structs
 - [ ] Use goroutines for lexical scanning check [ref](https://www.youtube.com/watch?v=HxaD_trXwRE)
@@ -66,13 +66,13 @@ $ ldd output
     - [x] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv), check [string.goof](./string.goof)
     - [ ] parse goof file into operations instead of hardcoding the program
 - [ ] Deploy a static site with an online playground for compiling on the go
-    - [ ] investigate and use goroutine for this
 - [ ] Include directories and add support for finding included files
 - [ ] Add library builtin functions
 
 ## BUGS
 - [ ] dump operation only prints unsigned integers
 - [ ] elif branches in if construction might produce different arguments on stack
+- [ ] proc assembly produces two return instructions (if a ret is followed by end of proc)
 
 ## Language Reference
 
