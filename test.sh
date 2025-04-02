@@ -50,6 +50,7 @@ run() {
         ./output > "tests/$test_file.tmp"
         cmp --silent "tests/$test_file.tmp" "tests/$test_file.txt" || fail "$test_file"
         rm -rf "tests/$test_file.tmp"
+        rm -rf "tests/$test_file.txt"
         echo "PASS $test_file"
     done
 }

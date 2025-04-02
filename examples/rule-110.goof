@@ -1,4 +1,4 @@
-macro N 100 end
+const N 100 end
 macro write 1 1 syscall3 end
 
 mem N 2 - + 1 .
