@@ -16,15 +16,9 @@ proc read_str ptr -- ptr int --
     swap str.data ,64
 end
 
-// ptr -> *ptr++
-macro inc64 dup ,64 1 + .64 end
-
-// ptr -> *ptr--
-macro dec64 dup ,64 1 - .64 end
-
 macro chop_left // input
-    dup str.count dec64
-    dup str.data inc64
+    dup str.count dup ,64 1 - .64 
+    dup str.data dup ,64 1 + .64
     drop
 end
 
@@ -53,7 +47,7 @@ proc str_chop_line ptr ptr -- --
     do
         dup chop_left
         swap
-        dup str.count inc64
+        dup str.count dup ,64 1 + .64
         swap
     end
     if dup str.count ,64 0 > do
@@ -74,7 +68,7 @@ proc str_chop_word ptr ptr -- --
     do
         dup chop_left
         swap
-        dup str.count inc64
+        dup str.count dup ,64 1 + .64
         swap
     end
     if dup str.count ,64 0 > do

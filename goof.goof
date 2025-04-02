@@ -1,19 +1,26 @@
 include "std.goof"
+include "string.goof"
 
-macro PUTD_BUFFER_CAP 32 end
-macro MEM_CAPACITY 640000 end
+const PUTD_BUFFER_CAP 32 end
+const MEM_CAPACITY 640000 end
 
-macro OP_PUSH_INT 0 end
-macro OP_PLUS     1 end
-macro OP_DUMP     2 end
+const OP_PUSH_INT 0 end
+const OP_PLUS     1 end
+const OP_DUMP     2 end
 
-macro putd-buffer mem end
-macro ops-count putd-buffer PUTD_BUFFER_CAP + end
-macro ops ops-count 8 + end
-macro sizeof(Op) 16 end
+memory putd-buffer PUTD_BUFFER_CAP end
+memory fd 8 end
+memory statbuf sizeof(stat) end
+memory content sizeof(str) end
+memory line sizeof(str) end
+memory word sizeof(str) end
+memory ops-count 8 end
+memory ops 0 end
+
+const sizeof(Op) 16 end
 
 // 10 -> "10"
-macro putd
+proc putd int -- --
     if dup 0 = do
         "0" puts
     else
@@ -35,13 +42,13 @@ macro putd
 end
 
 // type operand
-macro push-op
+proc push_op int int -- --
     ops-count ,64 sizeof(Op) * ops +
     dup 8 + rot rot .64 swap .64
     ops-count inc64
 end
 
-macro compile-ops
+proc compile_ops -- --
     "BITS 64\n" puts
     "segment .text\n" puts
     "dump:\n" puts
@@ -119,7 +126,60 @@ macro compile-ops
     drop
 end
 
-macro dump-ops
+if argc 2 < do
+    "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs
+    "error: no input file provided\n" eputs
+    1 exit
+end
+
+O_RDONLY
+1 nth_argv
+AT_FDCWD
+openat
+
+if dup 0 < do
+    "error: could not open file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+fd swap .64
+
+if statbuf fd ,64 fstat 0 < do
+    "error: could not determine size of file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+content str.count statbuf stat.st_size ,64 .64
+
+// void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+0                        // offset
+fd ,64                   // fd
+MAP_PRIVATE              // flags
+PROT_READ                // prot
+content str.count ,64    // len
+0                        // addr
+
+mmap                     // syscall for mmap
+
+content str.data swap .64         // save the returned pointer to content: mem[content] = ptr to file content
+
+if content str.data ,64 0 < do
+    "error: could not memory map file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+while content str.count ,64 0 > do
+    line content str_chop_line
+    while
+        line str.count ,64 0 >
+    do
+        line str_trim_left
+        word line str_chop_word
+        "|" puts word read_str puts "|\n" puts
+    end
+end
+
+proc dump_ops -- --
     0 while dup ops-count ,64 < do
         dup sizeof(Op) * ops +
         "type:    " puts dup ,64 dump
@@ -130,10 +190,10 @@ macro dump-ops
     drop
 end
 
-OP_PUSH_INT 34 push-op
-OP_PUSH_INT 35 push-op
-OP_PLUS     0  push-op
-OP_DUMP     0  push-op
+OP_PUSH_INT 34 push_op
+OP_PUSH_INT 35 push_op
+OP_PLUS     0  push_op
+OP_DUMP     0  push_op
 
-compile-ops
+compile_ops
 
