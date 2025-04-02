@@ -175,6 +175,7 @@ while content str.count ,64 0 > do
     do
         line str_trim_left
         word line str_chop_word
+        // TODO compare word with defined lexicons and push ops accordingly
         "|" puts word read_str puts "|\n" puts
     end
 end
