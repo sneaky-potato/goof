@@ -3,6 +3,29 @@ include "string.goof"
 memory content sizeof(str) end
 memory line    sizeof(str) end
 memory word    sizeof(str) end
+memory streq_a sizeof(str) end
+memory streq_b sizeof(str) end
+
+proc streq ptr int ptr int -- bool --
+    streq_a store_str
+    streq_b store_str
+    if streq_a str.count ,64 streq_b str.count ,64 = do
+        0 while
+            if dup streq_a str.count ,64 < do
+                dup streq_a str.data ,64 + ,
+                over streq_b str.data ,64 + ,
+                =
+            else
+                0 (bool)
+            end
+        do
+            1 +
+        end
+        dup streq_a str.count ,64 > over streq_a str.count ,64 = | swap drop
+    else
+        0 (bool)
+    end
+end
 
 "hello world\ngoodbye world" content store_str
 
@@ -19,3 +42,6 @@ word line str_chop_word
 "WORD: " 1 1 syscall3 drop
 word read_str 1 1 syscall3 drop
 "\n" 1 1 syscall3 drop
+if word read_str "hello" streq do
+    "FOUND HELLO\n" 1 1 syscall3 drop
+end

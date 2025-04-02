@@ -79,6 +79,20 @@ func getStringFromOperands(typedOperands ...typedOperand) string {
     return stringFromOperands
 }
 
+func getProcedureInputs(procName string) (string) {
+    procedureInputs := ""
+    for _, in := range procs[procName].inputs {
+        if in == constants.OP_TYPE_INT {
+            procedureInputs += "int "
+        } else if in == constants.OP_TYPE_PTR {
+            procedureInputs += "ptr "
+        } else if in == constants.OP_TYPE_BOOL {
+            procedureInputs += "bool "
+        }
+    }
+    return procedureInputs
+}
+
 func TypeCheckingProgram(program []model.Operation) {
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
@@ -442,18 +456,21 @@ func TypeCheckingProgram(program []model.Operation) {
             }
 
         case constants.OP_CALL:
-            util.CheckNumberOfArguments(stack.Size(), len(procs[op.Value.(string)].inputs), op, op.Value.(string))
-            for _, in := range procs[op.Value.(string)].inputs {
+            procName := op.Value.(string)
+            util.CheckNumberOfArguments(stack.Size(), len(procs[procName].inputs), op, procName)
+            foundArguments := "["
+            for _, in := range procs[procName].inputs {
                 a := stack.Pop()
+                foundArguments += a.getTypedString() + " "
                 if in == constants.OP_TYPE_INT && a.typ == TYPE_INT {
                 } else if in == constants.OP_TYPE_PTR && a.typ == TYPE_PTR {
                 } else if in == constants.OP_TYPE_BOOL && a.typ == TYPE_BOOL {
                 } else {
-                    foundArguments := a.getTypedString()
-                    util.TerminateWithError(op.FilePath, op.Row, "unexpected input for procedure call: " + foundArguments + "\n")
+                    procedureInputs := getProcedureInputs(procName)
+                    util.TerminateWithError(op.FilePath, op.Row, "unexpected input for procedure call: " + foundArguments + "], expected: " + procedureInputs + "\n")
                 }
             }
-            for _, in := range procs[op.Value.(string)].outputs {
+            for _, in := range procs[procName].outputs {
                 if in == constants.OP_TYPE_INT {
                     stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
                 } else if in == constants.OP_TYPE_PTR {

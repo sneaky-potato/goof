@@ -11,7 +11,7 @@ proc store_str ptr ptr int -- --
 end
 
 // ptr --> count "string"
-proc read_str ptr -- ptr int --
+proc read_str ptr -- int ptr --
     dup str.count ,64
     swap str.data ,64
 end

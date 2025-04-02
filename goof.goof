@@ -6,7 +6,8 @@ const MEM_CAPACITY 640000 end
 
 const OP_PUSH_INT 0 end
 const OP_PLUS     1 end
-const OP_DUMP     2 end
+const OP_MINUS    2 end
+const OP_DUMP     3 end
 
 memory putd-buffer PUTD_BUFFER_CAP end
 memory fd 8 end
@@ -14,6 +15,8 @@ memory statbuf sizeof(stat) end
 memory content sizeof(str) end
 memory line sizeof(str) end
 memory word sizeof(str) end
+memory streq_a sizeof(str) end
+memory streq_b sizeof(str) end
 memory ops-count 8 end
 memory ops 0 end
 
@@ -39,6 +42,27 @@ proc putd int -- --
         putd-buffer PUTD_BUFFER_CAP + swap - swap puts
    end
    drop
+end
+
+proc streq ptr int ptr int -- bool --
+    streq_a store_str
+    streq_b store_str
+    if streq_a str.count ,64 streq_b str.count ,64 = do
+        0 while
+            if dup streq_a str.count ,64 < do
+                dup streq_a str.data ,64 + ,
+                over streq_b str.data ,64 + ,
+                =
+            else
+                0 (bool)
+            end
+        do
+            1 +
+        end
+        dup streq_a str.count ,64 > over streq_a str.count ,64 = | swap drop
+    else
+        0 (bool)
+    end
 end
 
 // type operand
@@ -113,6 +137,12 @@ proc compile_ops -- --
             "    pop rbx\n" puts
             "    add rax, rbx\n" puts
             "    push rax\n" puts
+        elif dup ,64 OP_MINUS = do
+            "    ;; -- minus --\n" puts
+            "    pop rax\n" puts
+            "    pop rbx\n" puts
+            "    sub rbx, rax\n" puts
+            "    push rbx\n" puts
         elif dup ,64 OP_DUMP = do
             "    ;; -- dump --\n" puts
             "    pop rdi\n" puts
@@ -175,8 +205,15 @@ while content str.count ,64 0 > do
     do
         line str_trim_left
         word line str_chop_word
-        // TODO compare word with defined lexicons and push ops accordingly
-        "|" puts word read_str puts "|\n" puts
+        if word read_str "+" streq do
+            OP_PLUS     0  push_op
+        elif word read_str "-" streq do
+            OP_MINUS    0  push_op
+        elif word read_str "dump" streq do
+            OP_DUMP     0  push_op
+        else
+            "trying to parse as number\n" eputs
+        end
     end
 end
 
@@ -190,11 +227,6 @@ proc dump_ops -- --
     end
     drop
 end
-
-OP_PUSH_INT 34 push_op
-OP_PUSH_INT 35 push_op
-OP_PLUS     0  push_op
-OP_DUMP     0  push_op
 
 compile_ops
 
