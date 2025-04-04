@@ -25,7 +25,7 @@ record() {
     for test_file in "${TESTCASES[@]}"
     do
         echo "recording file $test_file"
-        go run main.go "tests/$test_file"
+        go run ./cmd/cli "tests/$test_file"
         ./output > "tests/$test_file.txt"
     done
 }
@@ -46,7 +46,7 @@ run() {
     for test_file in "${TESTCASES[@]}"
     do
         echo "testing file $test_file"
-        go run main.go "tests/$test_file"
+        go run ./cmd/cli "tests/$test_file"
         ./output > "tests/$test_file.tmp"
         cmp --silent "tests/$test_file.tmp" "tests/$test_file.txt" || fail "$test_file"
         rm -rf "tests/$test_file.tmp"
