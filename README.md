@@ -7,6 +7,13 @@ goof or goForth: a stack-based concatenative programming language inspired by [F
 I made this contraption to learn more about compilers and computer architecture.
 I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` linux for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
 
+Table of Contents
+1. [Idea](#idea)
+2. [Usage](#usage)
+3. [TODOs](#todos)
+4. [Bugs](#bugs)
+5. [Language Reference](#language-reference)
+
 ## Idea
 
 I always wanted a self hosted compiler for my own language. The big picture is to build a simple computer catered for the langauge.
@@ -64,7 +71,8 @@ $ ldd output
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
     - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)
     - [x] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv), check [string.goof](./string.goof)
-    - [ ] parse goof file into operations instead of hardcoding the program
+    - [x] parse goof file into operations instead of hardcoding the program
+    - [ ] run exec system call to execute nasm and ld, for producing final binary
 - [ ] Deploy a static site with an online playground for compiling on the go
 - [ ] Include directories and add support for finding included files
 - [ ] Add library builtin functions
@@ -148,19 +156,24 @@ When the compiler encounters a string the following happens:
 #### Memory
 
 - `mem` - pushes the memory address on the stack
-```pascal
+```c
 push(mem)
 ```
 
-- `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
+- `memory` - allocates a defined size of memory to a pointer which can be used as a label
 ```pascal
+memory num 8 end
+```
+
+- `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
+```c
 mem = pop()
 value = get_value_at_address(mem)
 push(value)
 ```
 
 - `.` - **store**: pops the value from stack, pops memory address from stack and stores the value at that address
-```pascal
+```c
 value = pop()
 mem = pop()
 set_value_at_address(mem, value)
@@ -170,12 +183,13 @@ set_value_at_address(mem, value)
 
 - `syscall<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`syscall1`, `syscall2`, etc)
 
-```porth
+```c
 syscall_number = pop()
 <move syscall_number to the corresponding register>
-for i in range(n):
-    arg = pop()
-    <move arg to i-th register according to the call convention>
+for (int i=0; i<n; i++) {
+     arg = pop()
+     <move arg to i-th register according to the call convention>
+}
 <perform the syscall>
 ```
 

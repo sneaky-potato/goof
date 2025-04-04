@@ -43,5 +43,5 @@ word line str_chop_word
 word read_str 1 1 syscall3 drop
 "\n" 1 1 syscall3 drop
 if word read_str "hello" streq do
-    "FOUND HELLO\n" 1 1 syscall3 drop
+    "FOUND hello\n" 1 1 syscall3 drop
 end

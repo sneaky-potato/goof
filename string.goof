@@ -76,3 +76,26 @@ proc str_chop_word ptr ptr -- --
     end
     drop drop
 end
+
+proc is_number ptr -- bool --
+    // &string i
+    0 while
+        if over str.count ,64 over > do
+            2dup
+            // &string i &string i
+            swap str.data ,64 + , '0' - // &string i string->data[i]
+            dup -1 > swap 10 < &
+        else
+            0 (bool)
+        end
+    do
+        1 +
+    end
+    // &string i
+    if over str.count ,64 over = do
+        1 (bool)
+    else
+        0 (bool)
+    end
+    rot drop drop
+end

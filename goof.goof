@@ -13,10 +13,11 @@ memory putd-buffer PUTD_BUFFER_CAP end
 memory fd 8 end
 memory statbuf sizeof(stat) end
 memory content sizeof(str) end
-memory line sizeof(str) end
-memory word sizeof(str) end
+memory line    sizeof(str) end
+memory word    sizeof(str) end
 memory streq_a sizeof(str) end
 memory streq_b sizeof(str) end
+memory parse_int_a sizeof(str) end
 memory ops-count 8 end
 memory ops 0 end
 
@@ -42,6 +43,17 @@ proc putd int -- --
         putd-buffer PUTD_BUFFER_CAP + swap - swap puts
    end
    drop
+end
+
+proc parse_int ptr int -- int --
+    parse_int_a store_str
+    0 0 while dup parse_int_a str.count ,64 < do
+        dup parse_int_a str.data ,64 + , '0' -
+        rot rot 10 * +
+        swap
+        1 +
+    end
+    drop
 end
 
 proc streq ptr int ptr int -- bool --
@@ -156,6 +168,17 @@ proc compile_ops -- --
     drop
 end
 
+proc dump_ops -- --
+    0 while dup ops-count ,64 < do
+        dup sizeof(Op) * ops +
+        "type:    " puts dup ,64 dump
+        "operand: " puts 8 + ,64 dump
+        "-----------\n" puts
+        1 +
+    end
+    drop
+end
+
 if argc 2 < do
     "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs
     "error: no input file provided\n" eputs
@@ -212,21 +235,17 @@ while content str.count ,64 0 > do
         elif word read_str "dump" streq do
             OP_DUMP     0  push_op
         else
-            "trying to parse as number\n" eputs
+            if word is_number do
+                OP_PUSH_INT word read_str parse_int push_op
+            else
+                1 nth_argv dup strlen swap eputs
+                ": " eputs "unknown token: " eputs word read_str eputs "\n" eputs
+                1 exit
+            end
         end
     end
 end
 
-proc dump_ops -- --
-    0 while dup ops-count ,64 < do
-        dup sizeof(Op) * ops +
-        "type:    " puts dup ,64 dump
-        "operand: " puts 8 + ,64 dump
-        "-----------\n" puts
-        1 +
-    end
-    drop
-end
 
 compile_ops
 
