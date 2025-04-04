@@ -31,12 +31,12 @@ The following flowchart summarizes the workflow
 
 ```mermaid
 flowchart LR
-    A[test.goof]-- main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
+    A[test.goof]-- ./cmd/cli/main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
 ```
 
 For compiling the program written in `test.goof` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
 ```shell
-go run main.go ./test.goof
+go run ./cmd/cli ./test.goof
 ./output
 ```
 
