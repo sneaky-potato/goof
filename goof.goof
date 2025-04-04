@@ -166,6 +166,12 @@ proc compile_ops -- --
         1 +
     end
     drop
+    "    mov rax, 60\n" puts
+    "    mov rdi, 0\n" puts
+    "    syscall\n" puts
+    "segment .data\n" puts
+    "segment .bss\n" puts
+    "mem: resb " puts MEM_CAPACITY putd "\n" puts
 end
 
 proc dump_ops -- --
