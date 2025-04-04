@@ -1,8 +1,8 @@
 include "std.goof"
 
 // memory layout
-macro fd mem end
-macro statbuf fd 8 + end
+memory fd 8 end
+memory statbuf sizeof(stat) end
 
 if argc 2 < do
     "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs

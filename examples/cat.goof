@@ -1,10 +1,10 @@
 include "std.goof"
 
-macro BUFFER_CAP 1024 end
+const BUFFER_CAP 1024 end
 
 // memory layout
-macro fd mem end
-macro buffer fd 8 + end
+memory fd 8 end
+memory buffer BUFFER_CAP end
 
 if argc 2 < do
     "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs

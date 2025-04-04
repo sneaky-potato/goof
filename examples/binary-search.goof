@@ -1,10 +1,10 @@
 include "std.goof"
 
-macro BUFFER_CAP 256 end
+const BUFFER_CAP 256 end
 
-macro cnt mem end
-macro key cnt 8 + end
-macro nums key 8 + end
+memory cnt 8 end
+memory key 8 end
+memory nums 0 end
 
 cnt
 BUFFER_CAP over stdin read drop // read cnt

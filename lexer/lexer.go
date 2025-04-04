@@ -15,6 +15,7 @@ import (
 )
 
 
+var macros = make(map[string][]model.Token)
 var memory = make(map[string]int)
 var consts = make(map[string]int64)
 var procs = make(map[string]int)
@@ -114,7 +115,6 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     var stack = new(util.Stack[int])
     var elifStack = new(util.Stack[int])
     var program []model.Operation
-    macros := make(map[string][]model.Token)
     memoryPtr := 0
 
     if constants.COUNT_OPS != 55 {

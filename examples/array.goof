@@ -1,6 +1,6 @@
 include "std.goof"
 
-macro BUFFER_CAP 256 end
+const BUFFER_CAP 256 end
 
 "Enter number of elements:\n" stdout write drop
 BUFFER_CAP mem stdin read drop

@@ -1,13 +1,13 @@
 include "std.goof"
 
-macro BUFFER_CAP 256 end
-macro PUTD_BUFFER_CAP 32 end
+const BUFFER_CAP 256 end
+const PUTD_BUFFER_CAP 32 end
 
-macro putd-buffer mem end
-macro cnt putd-buffer PUTD_BUFFER_CAP + end
-macro nums cnt 8 + end
+memory putd-buffer PUTD_BUFFER_CAP end
+memory cnt 8 end
+memory nums 0 end
 
-macro putd
+proc putd int -- --
     if dup 0 = do
         "0" puts
     else
