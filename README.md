@@ -31,21 +31,22 @@ The following flowchart summarizes the workflow
 
 ```mermaid
 flowchart LR
-    A[test.goof]-- ./cmd/cli/main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
+    A[test.goof]-- ./cmd/cli/main.go -->B[test.asm]-- nasm -->C[test.o]-- ld -->D[test]
 ```
 
-For compiling the program written in `test.goof` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
+For compiling the program written in `test.goof` and writing to an ELF executable `test` (you can check the generated assembly in `test.asm`).
 ```shell
-go run ./cmd/cli ./test.goof
-./output
+$ go run ./cmd/cli ./test.goof
+$ ./test
 ```
+Currently this ELF executable can only be run on linux 64 bit systems (`x86_64` architecture)
 
 The compiled binary can be verified using `file` and `ldd` commands.
 ```shell
-$ file output
-output: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
+$ file test
+test: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
 
-$ ldd output
+$ ldd test
 	not a dynamic executable
 ```
 
@@ -156,13 +157,11 @@ When the compiler encounters a string the following happens:
 #### Memory
 
 - `mem` - pushes the memory address on the stack
-```c
-push(mem)
-```
 
 - `memory` - allocates a defined size of memory to a pointer which can be used as a label
 ```pascal
 memory num 8 end
+// num = malloc(8)
 ```
 
 - `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
