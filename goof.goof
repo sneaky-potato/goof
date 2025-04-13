@@ -2,7 +2,7 @@ include "std.goof"
 include "string.goof"
 
 const PUTD_BUFFER_CAP 32 end
-const MEM_CAPACITY 640000 end
+const MEM_CAPACITY    640000 end
 
 const OP_PUSH_INT 0 end
 const OP_PLUS     1 end
@@ -10,16 +10,16 @@ const OP_MINUS    2 end
 const OP_DUMP     3 end
 
 memory putd-buffer PUTD_BUFFER_CAP end
-memory fd 8 end
-memory statbuf sizeof(stat) end
-memory content sizeof(str) end
-memory line    sizeof(str) end
-memory word    sizeof(str) end
-memory streq_a sizeof(str) end
-memory streq_b sizeof(str) end
+memory fd          8 end
+memory statbuf     sizeof(stat) end
+memory content     sizeof(str) end
+memory line        sizeof(str) end
+memory word        sizeof(str) end
+memory streq_a     sizeof(str) end
+memory streq_b     sizeof(str) end
 memory parse_int_a sizeof(str) end
-memory ops-count 8 end
-memory ops 0 end
+memory ops-count   8 end
+memory ops         0 end
 
 const sizeof(Op) 16 end
 
