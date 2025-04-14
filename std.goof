@@ -1,21 +1,21 @@
-macro stdin  0 end
-macro stdout 1 end
-macro stderr 2 end
+const stdin  0 end
+const stdout 1 end
+const stderr 2 end
 
-macro SYS_READ 0 end
-macro SYS_WRITE 1 end
-macro SYS_CLOSE 3 end
-macro SYS_FSTAT 5 end
-macro SYS_MMAP 9 end
-macro SYS_SLEEP 35 end
-macro SYS_EXIT 60 end
-macro SYS_OPENAT 257 end
+const SYS_READ 0 end
+const SYS_WRITE 1 end
+const SYS_CLOSE 3 end
+const SYS_FSTAT 5 end
+const SYS_MMAP 9 end
+const SYS_SLEEP 35 end
+const SYS_EXIT 60 end
+const SYS_OPENAT 257 end
 
-macro O_RDONLY 0 end
-macro AT_FDCWD -100 end
+const O_RDONLY 0 end
+const AT_FDCWD -100 end
 
-macro MAP_PRIVATE 2 end
-macro PROT_READ 1 end
+const MAP_PRIVATE 2 end
+const PROT_READ 1 end
 
 macro write SYS_WRITE syscall3 end
 macro read SYS_READ syscall3 end
@@ -29,7 +29,7 @@ macro exit SYS_EXIT syscall1 drop end
 macro / divmod drop end
 macro % divmod swap drop end
 
-macro sizeof(stat) 144 end
+const sizeof(stat) 144 end
 macro stat.st_dev 0 + end
 macro stat.st_ino 8 + end
 macro stat.st_mode 24 + end
@@ -43,19 +43,19 @@ macro stat.st_blocks 64 + end
 macro stat.st_atim 72 + end
 macro stat.st_mtim 88 + end
 macro stat.st_ctim 104 + end
-macro sizeof(stat.st_dev) 8 end
-macro sizeof(stat.st_ino) 8 end
-macro sizeof(stat.st_mode) 4 end
-macro sizeof(stat.st_nlink) 8 end
-macro sizeof(stat.st_uid) 4 end
-macro sizeof(stat.st_gid) 4 end
-macro sizeof(stat.st_rdev) 8 end
-macro sizeof(stat.st_size) 8 end
-macro sizeof(stat.st_blksize) 8 end
-macro sizeof(stat.st_blocks) 8 end
-macro sizeof(stat.st_atim) 16 end
-macro sizeof(stat.st_mtim) 16 end
-macro sizeof(stat.st_ctim) 16 end
+const sizeof(stat.st_dev) 8 end
+const sizeof(stat.st_ino) 8 end
+const sizeof(stat.st_mode) 4 end
+const sizeof(stat.st_nlink) 8 end
+const sizeof(stat.st_uid) 4 end
+const sizeof(stat.st_gid) 4 end
+const sizeof(stat.st_rdev) 8 end
+const sizeof(stat.st_size) 8 end
+const sizeof(stat.st_blksize) 8 end
+const sizeof(stat.st_blocks) 8 end
+const sizeof(stat.st_atim) 16 end
+const sizeof(stat.st_mtim) 16 end
+const sizeof(stat.st_ctim) 16 end
 
 // ptr -> strlen(ptr)
 // string pointed to by ptr must be null terminated

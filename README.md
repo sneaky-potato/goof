@@ -7,6 +7,14 @@ goof or goForth: a stack-based concatenative programming language inspired by [F
 I made this contraption to learn more about compilers and computer architecture.
 I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` linux for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
 
+Table of Contents
+1. [Idea](#idea)
+2. [Usage](#usage)
+3. [Example](#example)
+4. [TODOs](#todos)
+5. [Bugs](#bugs)
+6. [Language Reference](#language-reference)
+
 ## Idea
 
 I always wanted a self hosted compiler for my own language. The big picture is to build a simple computer catered for the langauge.
@@ -17,30 +25,41 @@ Majority of the project has been inspired from [tsoding](https://www.youtube.com
 
 You would require the following for compiling the language to a 64 bit ELF executable file.
 - [go](https://go.dev/): at the time of writing, I have used `1.23.3` version
-- [nasm](https://nasm.us/): Netwide Assembler is being used to generate the object file for `x86_64` architecture by taking the assembly output.
+- [nasm](https://nasm.us/): Netwide Assembler is being used to generate the object file for `x86_64` architecture by taking the assembly as input.
 - [ld](https://linux.die.net/man/1/ld): For linking the generated object file to final ELF executable.
 
 The following flowchart summarizes the workflow
 
 ```mermaid
 flowchart LR
-    A[test.goof]-- main.go -->B[output.asm]-- nasm -->C[output.o]-- ld -->D[output]
+    A[test.goof]-- ./cmd/cli/main.go -->B[test.asm]-- nasm -->C[test.o]-- ld -->D[test]
 ```
 
-For compiling the program written in `test.goof` and writing to an ELF executable `output` (you can check the generated assembly in `output.asm`)
-```shell
-go run main.go ./test.goof
-./output
+## Example
+
+Write the following program in `test.goof`
+```pascal
+20 22 + dump
 ```
+
+For compiling the program written in `test.goof` and writing to an ELF executable `test` (you can check the generated assembly in `test.asm`).
+```shell
+$ go run ./cmd/cli ./test.goof
+$ ./test
+42
+```
+Currently this ELF executable can only be run on linux 64 bit systems (`x86_64` architecture)
 
 The compiled binary can be verified using `file` and `ldd` commands.
 ```shell
-$ file output
-output: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
+$ file test
+test: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, not stripped
 
-$ ldd output
+$ ldd test
 	not a dynamic executable
 ```
+
+Other examples can be found in [/examples](./examples) directory which can be readily compiled.
 
 ## TODOs
 - [x] Compiled
@@ -48,13 +67,9 @@ $ ldd output
 - [x] Turing complete
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [x] Add editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
-- [x] Add support for `elif`
 - [x] Add local memory
 - [ ] Add procedures with parameters and return values
-    - [x] define procedures without type signatures
-    - [x] implement return keyword
     - [x] add type signatures
-    - [x] draw a control flow for procedure calling and document everything
     - [ ] add type checking inside function (context stack)
     - [ ] add local memory and clean function stack after return, check [ref](https://forum.nasm.us/index.php?topic=1611.0)
 - [ ] Deprecate macros
@@ -64,7 +79,8 @@ $ ldd output
     - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
     - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)
     - [x] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv), check [string.goof](./string.goof)
-    - [ ] parse goof file into operations instead of hardcoding the program
+    - [x] parse goof file into operations instead of hardcoding the program
+    - [ ] run exec system call to execute nasm and ld, for producing final binary
 - [ ] Deploy a static site with an online playground for compiling on the go
 - [ ] Include directories and add support for finding included files
 - [ ] Add library builtin functions
@@ -142,40 +158,96 @@ When the compiler encounters a string the following happens:
 | ---   | ---                                  | ---                          |
 | `shr` | `[a: int] [b: int] -- [a >> b: int]` | right **unsigned** bit shift |
 | `shl` | `[a: int] [b: int] -- [a << b: int]` | left bit shift               |
-| `or`  | `[a: int] [b: int] -- [a \| b: int]` | bitwise `or`                     |
-| `and` | `[a: int] [b: int] -- [a & b: int]`  | bitwise `and`                    |
+| `or`  | `[a: int] [b: int] -- [a \| b: int]` | bitwise `or`                 |
+| `and` | `[a: int] [b: int] -- [a & b: int]`  | bitwise `and`                |
+
+#### Control flow
+
+- `if`, `elif`, `else` can be used to execute conditional flows as follows:
+- `if` and `elif` are used in combination with `do` which expects a boolean value on stack
+```pascal
+// if boolCondition do
+// ...
+// end
+42
+41
+if 2dup > do   // will check if 42 > 41
+    1 dump
+elif 2dup = do // will check if 42 == 41
+    0 dump
+else           // this runs after all branches are false
+    2 dump
+end
+```
+
+#### Loops
+
+- classic while loops are supported with `while` keyword
+- `while` is used in combination with `do` which expects a boolean value
+```pascal
+// while boolCondition do
+// ...
+// end
+0                // iteration count i
+while dup 5 < do // will check if i < 5
+    0 dump       // body of while
+    1 +          // i = i + 1
+end
+```
 
 #### Memory
 
 - `mem` - pushes the memory address on the stack
-```pascal
-push(mem)
-```
 
-- `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
+- `memory` - allocates a defined size of memory to a pointer which can be used as a label
 ```pascal
-mem = pop()
-value = get_value_at_address(mem)
-push(value)
+memory num 8 end
+// num = malloc(8)
 ```
 
 - `.` - **store**: pops the value from stack, pops memory address from stack and stores the value at that address
 ```pascal
-value = pop()
-mem = pop()
-set_value_at_address(mem, value)
+num 42 .
+// mem[num] = 42
+```
+
+- `.64` - **store64**: stores 64 bit integer instead of 8 bit
+
+- `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
+```pascal
+42 num ,
+// push(mem[num])
+```
+
+- `,64` - **load64**: loads 64 bit integer instead of 8 bit
+
+#### Procedures
+
+- `proc` keyword is used to make a procedure with type signatures
+- `proc` is followed by the name of procedure
+- which is then followed by type signatures of paramaters and return (separated by `--`)
+- `proc abc int -- int --` defines function named `abc` which takes an `int` as paramter and returns `int`
+- general procedure definition goes like this- `proc procName <inputs> -- <outputs> -- <body> end`
+```pascal
+proc hello -- int -- // no parameters but returns int
+    "Hello " 1 1 syscall3 drop // print "Hello" on console using write syscall
+    1 ret // return 1
+end
+// call the proc like this
+hello dump // dump the int return from procedure
 ```
 
 #### System
 
 - `syscall<n>` - perform a syscall with n arguments where n is in range `[0..6]`. (`syscall1`, `syscall2`, etc)
 
-```porth
+```c
 syscall_number = pop()
 <move syscall_number to the corresponding register>
-for i in range(n):
-    arg = pop()
-    <move arg to i-th register according to the call convention>
+for (int i=0; i<n; i++) {
+     arg = pop()
+     <move arg to i-th register according to the call convention>
+}
 <perform the syscall>
 ```
 

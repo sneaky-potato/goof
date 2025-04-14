@@ -1,19 +1,30 @@
 include "std.goof"
+include "string.goof"
 
-macro PUTD_BUFFER_CAP 32 end
-macro MEM_CAPACITY 640000 end
+const PUTD_BUFFER_CAP 32 end
+const MEM_CAPACITY    640000 end
 
-macro OP_PUSH_INT 0 end
-macro OP_PLUS     1 end
-macro OP_DUMP     2 end
+const OP_PUSH_INT 0 end
+const OP_PLUS     1 end
+const OP_MINUS    2 end
+const OP_DUMP     3 end
 
-macro putd-buffer mem end
-macro ops-count putd-buffer PUTD_BUFFER_CAP + end
-macro ops ops-count 8 + end
-macro sizeof(Op) 16 end
+memory putd-buffer PUTD_BUFFER_CAP end
+memory fd          8 end
+memory statbuf     sizeof(stat) end
+memory content     sizeof(str) end
+memory line        sizeof(str) end
+memory word        sizeof(str) end
+memory streq_a     sizeof(str) end
+memory streq_b     sizeof(str) end
+memory parse_int_a sizeof(str) end
+memory ops-count   8 end
+memory ops         0 end
+
+const sizeof(Op) 16 end
 
 // 10 -> "10"
-macro putd
+proc putd int -- --
     if dup 0 = do
         "0" puts
     else
@@ -34,14 +45,46 @@ macro putd
    drop
 end
 
+proc parse_int ptr int -- int --
+    parse_int_a store_str
+    0 0 while dup parse_int_a str.count ,64 < do
+        dup parse_int_a str.data ,64 + , '0' -
+        rot rot 10 * +
+        swap
+        1 +
+    end
+    drop
+end
+
+proc streq ptr int ptr int -- bool --
+    streq_a store_str
+    streq_b store_str
+    if streq_a str.count ,64 streq_b str.count ,64 = do
+        0 while
+            if dup streq_a str.count ,64 < do
+                dup streq_a str.data ,64 + ,
+                over streq_b str.data ,64 + ,
+                =
+            else
+                0 (bool)
+            end
+        do
+            1 +
+        end
+        dup streq_a str.count ,64 > over streq_a str.count ,64 = | swap drop
+    else
+        0 (bool)
+    end
+end
+
 // type operand
-macro push-op
+proc push_op int int -- --
     ops-count ,64 sizeof(Op) * ops +
     dup 8 + rot rot .64 swap .64
     ops-count inc64
 end
 
-macro compile-ops
+proc compile_ops -- --
     "BITS 64\n" puts
     "segment .text\n" puts
     "dump:\n" puts
@@ -106,6 +149,12 @@ macro compile-ops
             "    pop rbx\n" puts
             "    add rax, rbx\n" puts
             "    push rax\n" puts
+        elif dup ,64 OP_MINUS = do
+            "    ;; -- minus --\n" puts
+            "    pop rax\n" puts
+            "    pop rbx\n" puts
+            "    sub rbx, rax\n" puts
+            "    push rbx\n" puts
         elif dup ,64 OP_DUMP = do
             "    ;; -- dump --\n" puts
             "    pop rdi\n" puts
@@ -117,9 +166,15 @@ macro compile-ops
         1 +
     end
     drop
+    "    mov rax, 60\n" puts
+    "    mov rdi, 0\n" puts
+    "    syscall\n" puts
+    "segment .data\n" puts
+    "segment .bss\n" puts
+    "mem: resb " puts MEM_CAPACITY putd "\n" puts
 end
 
-macro dump-ops
+proc dump_ops -- --
     0 while dup ops-count ,64 < do
         dup sizeof(Op) * ops +
         "type:    " puts dup ,64 dump
@@ -130,10 +185,73 @@ macro dump-ops
     drop
 end
 
-OP_PUSH_INT 34 push-op
-OP_PUSH_INT 35 push-op
-OP_PLUS     0  push-op
-OP_DUMP     0  push-op
+if argc 2 < do
+    "usage: " eputs 0 nth_argv dup strlen swap eputs " <file>\n" eputs
+    "error: no input file provided\n" eputs
+    1 exit
+end
 
-compile-ops
+O_RDONLY
+1 nth_argv
+AT_FDCWD
+openat
+
+if dup 0 < do
+    "error: could not open file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+fd swap .64
+
+if statbuf fd ,64 fstat 0 < do
+    "error: could not determine size of file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+content str.count statbuf stat.st_size ,64 .64
+
+// void *mmap(void *addr, size_t len, int prot, int flags, int fildes, off_t off);
+0                        // offset
+fd ,64                   // fd
+MAP_PRIVATE              // flags
+PROT_READ                // prot
+content str.count ,64    // len
+0                        // addr
+
+mmap                     // syscall for mmap
+
+content str.data swap .64         // save the returned pointer to content: mem[content] = ptr to file content
+
+if content str.data ,64 0 < do
+    "error: could not memory map file " eputs 1 nth_argv dup strlen swap eputs "\n" eputs
+    1 exit
+end
+
+while content str.count ,64 0 > do
+    line content str_chop_line
+    while
+        line str.count ,64 0 >
+    do
+        line str_trim_left
+        word line str_chop_word
+        if word read_str "+" streq do
+            OP_PLUS     0  push_op
+        elif word read_str "-" streq do
+            OP_MINUS    0  push_op
+        elif word read_str "dump" streq do
+            OP_DUMP     0  push_op
+        else
+            if word is_number do
+                OP_PUSH_INT word read_str parse_int push_op
+            else
+                1 nth_argv dup strlen swap eputs
+                ": " eputs "unknown token: " eputs word read_str eputs "\n" eputs
+                1 exit
+            end
+        end
+    end
+end
+
+
+compile_ops
 

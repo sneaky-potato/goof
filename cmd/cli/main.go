@@ -7,10 +7,12 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
+    "strings"
 
-    "github.com/sneaky-potato/goof/lexer"
-    "github.com/sneaky-potato/goof/types"
 	"github.com/sneaky-potato/goof/compiler"
+	"github.com/sneaky-potato/goof/lexer"
+	"github.com/sneaky-potato/goof/types"
 )
 
 func callCmd(cmd string, args ...string) {
@@ -56,17 +58,18 @@ func main() {
 
     filePath := flag.Args()[0]
     program := lexer.LoadProgramFromFile(filePath)
-
+    fileName := filepath.Base(filePath)
+    fileNameWithoutExtension := strings.TrimSuffix(fileName, filepath.Ext(fileName))
     if !(*skipTypeChecking) {
         types.TypeCheckingProgram(program)
     }
 
-    compiler.CompileToAsm("output.asm", program)
+    compiler.CompileToAsm(fileNameWithoutExtension + ".asm", program)
 
-    callCmd("nasm", "-felf64", "output.asm")
-    callCmd("ld", "-o", "output", "output.o")
+    callCmd("nasm", "-felf64", fileNameWithoutExtension + ".asm")
+    callCmd("ld", "-o", fileNameWithoutExtension, fileNameWithoutExtension + ".o")
 
     if *runOnCom {
-        callCmd("./output", flag.Args()[1:]...)
+        callCmd("./" + fileNameWithoutExtension, flag.Args()[1:]...)
     }
 }
