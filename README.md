@@ -17,11 +17,16 @@ Table of Contents
 
 ## Idea
 
-I always wanted a self hosted compiler for my own language. The big picture is to build a simple computer catered for the langauge.
-The idea for this project stemmed from [Crafting Interpreters](https://www.craftinginterpreters.com/). But I believe the book spoon feeds the concepts and at the end you have an emulator program for running your language and not a native program that you can call independent. Hence bootstrapping through this route would have been very difficult.
+I always wanted a self hosted compiler for my own language. The big picture is to build my own simple computer catered for the langauge.
+
+The idea for this project stemmed from book [Crafting Interpreters](https://www.craftinginterpreters.com/). But I believe the book spoon feeds the concepts and at the end you have an emulator program. The compiler in the book depends on some existing runtime (Java and C).
+
+Hence bootstrapping through this route would have been very difficult.
 Majority of the project has been inspired from [tsoding](https://www.youtube.com/@TsodingDaily) and his [porth](https://www.youtube.com/playlist?list=PLpM-Dvs8t0VbMZA7wW9aR3EtBqe2kinu4) series which is a language like Forth but in python. I decided to write this in go for various reasons I find meaningful.
 
 ## Usage
+
+Currently only `x86_64 GNU/Linux` platform is supported.
 
 You would require the following for compiling the language to a 64 bit ELF executable file.
 - [go](https://go.dev/): at the time of writing, I have used `1.23.3` version
@@ -48,7 +53,6 @@ $ go run ./cmd/cli ./test.goof
 $ ./test
 42
 ```
-Currently this ELF executable can only be run on linux 64 bit systems (`x86_64` architecture)
 
 The compiled binary can be verified using `file` and `ldd` commands.
 ```shell
@@ -64,7 +68,7 @@ Other examples can be found in [/examples](./examples) directory which can be re
 ## TODOs
 - [x] Compiled
 - [x] Native
-- [x] Turing complete
+- [x] Turing complete, you can check [game of life](./examples/gol.goof) and [rule110](./examples/rule-110.goof) written in goof
 - [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
 - [x] Add editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
 - [x] Add local memory
@@ -80,7 +84,7 @@ Other examples can be found in [/examples](./examples) directory which can be re
     - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)
     - [x] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv), check [string.goof](./string.goof)
     - [x] parse goof file into operations instead of hardcoding the program
-    - [ ] run exec system call to execute nasm and ld, for producing final binary
+    - [ ] run exec system call to execute `nasm` and `ld`, for producing final binary
 - [ ] Deploy a static site with an online playground for compiling on the go
 - [ ] Include directories and add support for finding included files
 - [ ] Add library builtin functions
@@ -215,7 +219,7 @@ num 42 .
 
 - `,` - **load**: pops the memory address from stack and pushes the value present at that address (dereferences the memory address present on top of stack)
 ```pascal
-42 num ,
+num ,
 // push(mem[num])
 ```
 
@@ -236,6 +240,7 @@ end
 // call the proc like this
 hello dump // dump the int return from procedure
 ```
+- more complex procedures like the factorial procedure can be found in [recursive.goof](./examples/recursive.goof)
 
 #### System
 
