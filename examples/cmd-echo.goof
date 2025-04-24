@@ -1,0 +1,31 @@
+include "std.goof"
+
+const sizeof(ptr) 8 end
+const CMD_ARGS_SIZE 2 end
+
+memory cmd CMD_ARGS_SIZE sizeof(ptr) * end
+
+cmd 0 + "/usr/bin/echo\x00" swap drop .64
+cmd 8 + "hello world\x00" swap drop .64
+
+fork 
+if dup 0 = do
+    // child process (pid = 0)
+    "[CMD] " puts
+    0 while dup CMD_ARGS_SIZE < do
+        dup sizeof(ptr) * cmd + ,64 (ptr) 64 swap puts
+        " " puts
+        1 +
+    end
+    "\n" puts
+
+    // NULL ["/usr/bin/echo", "hello"] "echo"
+    0 cmd cmd ,64 59 syscall3 drop
+elif dup 0 > do
+    // parent process
+    "[TODO] waiting for child process is not implemented\n" eputs
+else
+    "[ERROR] could not fork a child process\n" eputs
+end
+drop
+

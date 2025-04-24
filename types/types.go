@@ -96,7 +96,7 @@ func getProcedureInputs(procName string) (string) {
 func TypeCheckingProgram(program []model.Operation) {
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
-    if constants.COUNT_OPS != 55 {
+    if constants.COUNT_OPS != 56 {
         panic("Exhaustive handling inside TypeCheckingProgram")
     }
     var op model.Operation

@@ -1,4 +1,4 @@
-memory cmd  16 end
+memory cmd 16 end
 
 cmd 0 + "/usr/bin/echo\x00" swap drop .64
 cmd 8 + "hello world\x00" swap drop .64
