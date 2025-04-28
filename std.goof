@@ -12,9 +12,16 @@ const SYS_FORK 57 end
 const SYS_EXECV 59 end
 const SYS_EXIT 60 end
 const SYS_WAIT4 61 end
+const SYS_FCHMOD 91 end
 const SYS_OPENAT 257 end
 
 const O_RDONLY 0 end
+const O_WRONLY 1 end
+const O_RDWR 2 end
+const O_CREAT 64 end
+const O_TRUNC 512 end
+// printf("%d", (mode_t)0666);
+const MODE0666 436 end
 const AT_FDCWD -100 end
 
 const MAP_PRIVATE 2 end
@@ -23,6 +30,7 @@ const PROT_READ 1 end
 macro write SYS_WRITE syscall3 end
 macro read SYS_READ syscall3 end
 macro openat SYS_OPENAT syscall3 end
+macro fchmod SYS_FCHMOD syscall2 end
 macro mmap SYS_MMAP syscall6 end
 macro fstat SYS_FSTAT syscall2 end
 macro fork SYS_FORK syscall0 end
@@ -110,6 +118,10 @@ end
 
 macro puts
     stdout write drop
+end
+
+macro fputs
+   ,64 write drop
 end
 
 macro eputs
