@@ -25,7 +25,7 @@ memory ops         0 end
 const sizeof(Op) 16 end
 
 // 10 -> "10"
-proc fputd int ptr -- --
+proc fputd int -- --
     if dup 0 = do
         "0" outputfd fputs
     else
