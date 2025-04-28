@@ -21,7 +21,7 @@ var consts = make(map[string]int64)
 var procs = make(map[string]int)
 
 func ParseTokenAsOp(token model.Token) model.Operation {
-    if constants.COUNT_OPS != 56 {
+    if constants.COUNT_OPS != 57 {
         panic("Exhaustive handling in parseTokenAsOp")
     }
 
@@ -117,7 +117,7 @@ func compileTokenList(tokenList []model.Token) []model.Operation {
     var program []model.Operation
     memoryPtr := 0
 
-    if constants.COUNT_OPS != 56 {
+    if constants.COUNT_OPS != 57 {
         panic("Exhaustive handling inside compileTokenList")
     }
 

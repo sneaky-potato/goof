@@ -96,7 +96,7 @@ func getProcedureInputs(procName string) (string) {
 func TypeCheckingProgram(program []model.Operation) {
     var stack = new(util.Stack[typedOperand])
     var blockStacks = new(util.Stack[blockStack])
-    if constants.COUNT_OPS != 56 {
+    if constants.COUNT_OPS != 57 {
         panic("Exhaustive handling inside TypeCheckingProgram")
     }
     var op model.Operation
@@ -498,6 +498,14 @@ func TypeCheckingProgram(program []model.Operation) {
             stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
         case constants.OP_SYSCALL3:
             util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            _ = stack.Pop()
+            stack.Push(typedOperand{ TYPE_INT, op.FilePath, op.Row })
+        case constants.OP_SYSCALL4:
+            util.CheckNumberOfArguments(stack.Size(), 4, op, "syscall3")
+            _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()
             _ = stack.Pop()

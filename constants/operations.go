@@ -51,6 +51,7 @@ const (
     OP_SYSCALL1
     OP_SYSCALL2
     OP_SYSCALL3
+    OP_SYSCALL4
     OP_SYSCALL6
     OP_ARGV
     OP_ARGC
@@ -106,6 +107,7 @@ var BUILTIN_WORDS = map[string]int{
     "syscall1": OP_SYSCALL1,
     "syscall2": OP_SYSCALL2,
     "syscall3": OP_SYSCALL3,
+	"syscall4": OP_SYSCALL4,
     "syscall6": OP_SYSCALL6,
     "argv": OP_ARGV,
     "argc": OP_ARGC,
