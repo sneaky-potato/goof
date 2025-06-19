@@ -4,6 +4,9 @@
 
 goof or goForth: a stack-based concatenative programming language inspired by [Forth](https://en.wikipedia.org/wiki/Forth_(programming_language)) and implemented in Go.
 
+[![CC BY 4.0][cc-by-shield]][cc-by]
+
+
 I made this contraption to learn more about compilers and computer architecture.
 I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` linux for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
 
@@ -264,3 +267,13 @@ for (int i=0; i<n; i++) {
 ```
 
 - `include` - includes the tokens from a goof file into the current file.
+
+## License
+This work is licensed under a
+[Creative Commons Attribution 4.0 International License][cc-by].
+
+[![CC BY 4.0][cc-by-image]][cc-by]
+
+[cc-by]: http://creativecommons.org/licenses/by/4.0/
+[cc-by-image]: https://i.creativecommons.org/l/by/4.0/88x31.png
+[cc-by-shield]: https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg
