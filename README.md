@@ -9,20 +9,28 @@ I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` li
 
 Table of Contents
 1. [Idea](#idea)
-2. [Usage](#usage)
-3. [Example](#example)
-4. [TODOs](#todos)
-5. [Bugs](#bugs)
-6. [Language Reference](#language-reference)
+2. [Features](#features)
+3. [Usage](#usage)
+4. [Example](#example)
+5. [TODOs](#todos)
+6. [Bugs](#bugs)
+7. [Language Reference](#language-reference)
 
 ## Idea
 
-I always wanted a self hosted compiler for my own language. The big picture is to build my own simple computer catered for the langauge.
+I always wanted a *self hosted compiler* for my **own** language. The big picture is to build my own simple computer catered for the langauge.
 
 The idea for this project stemmed from book [Crafting Interpreters](https://www.craftinginterpreters.com/). But I believe the book spoon feeds the concepts and at the end you have an emulator program. The compiler in the book depends on some existing runtime (Java and C).
 
 Hence bootstrapping through this route would have been very difficult.
 Majority of the project has been inspired from [tsoding](https://www.youtube.com/@TsodingDaily) and his [porth](https://www.youtube.com/playlist?list=PLpM-Dvs8t0VbMZA7wW9aR3EtBqe2kinu4) series which is a language like Forth but in python. I decided to write this in go for various reasons I find meaningful.
+
+## Features
+
+- Compiled, native, turing complete, check [game of life](./examples/gol.goof) and [rule110](./examples/rule-110.goof) written in goof
+- Static type checking enabled, taken inspiration from [here](https://binji.github.io/posts/webassembly-type-checking/)
+- Self hosted compiler, check [goof.goof](./goof.goof), a compiler for goof written in goof
+- Editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
 
 ## Usage
 
@@ -66,28 +74,14 @@ $ ldd test
 Other examples can be found in [/examples](./examples) directory which can be readily compiled.
 
 ## TODOs
-- [x] Compiled
-- [x] Native
-- [x] Turing complete, you can check [game of life](./examples/gol.goof) and [rule110](./examples/rule-110.goof) written in goof
-- [x] Static type checking, check reference [here](https://binji.github.io/posts/webassembly-type-checking/)
-- [x] Add editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
-- [x] Add local memory
 - [ ] Add procedures with parameters and return values
-    - [x] add type signatures
     - [ ] add type checking inside function (context stack)
     - [ ] add local memory and clean function stack after return, check [ref](https://forum.nasm.us/index.php?topic=1611.0)
 - [ ] Deprecate macros
     - [ ] add offset keyword for defining memory offsets for structs
 - [ ] Use goroutines for lexical scanning check [ref](https://www.youtube.com/watch?v=HxaD_trXwRE)
-- [ ] Self-hosted compiler
-    - [x] support extracting command line args, check [cli-args.goof](./tests/cli-args.goof)
-    - [x] memory mapping file contents for self hosting parsing, check [ref](https://man7.org/linux/man-pages/man2/mmap.2.html), check [file-map.goof](./examples/file-map.goof)
-    - [x] add support for parsing strings, say string.goof, check [ref](https://github.com/tsoding/sv), check [string.goof](./string.goof)
-    - [x] parse goof file into operations instead of hardcoding the program
-    - [ ] run exec system call to execute `nasm` and `ld`, for producing final binary
 - [ ] Deploy a static site with an online playground for compiling on the go
 - [ ] Include directories and add support for finding included files
-- [ ] Add library builtin functions
 
 ## BUGS
 - [ ] dump operation only prints unsigned integers
@@ -127,16 +121,16 @@ When the compiler encounters a string the following happens:
 
 ### Intrinsics
 
-#### stack
+#### Stack
 
-| Name    | Signature        | Description                                                                                 |
-| ---     | ---              | ---                                                                                         |
-| `dup`   | `a -- a a`       | duplicate an element on top of the stack                                                    |
-| `swap`  | `a b -- b a`     | swap 2 elements on the top of the stack                                                     |
-| `drop`  | `a b -- a`       | drops the top element of the stack                                                          |
-| `dump`  | `a b -- a`       | print the element on top of the stack, remove it from the stack (element is treated as unsigned 64bit int) |
-| `over`  | `a b -- a b a`   | copy the element below the top of the stack                                                 |
-| `rot`   | `a b c -- c a b` | rotate the top three stack elements                                                         |
+| Name    | Signature        | Description                                                                               |
+| ---     | ---              | ---                                                                                       |
+| `dup`   | `a -- a a`       | duplicate an element on top of the stack                                                  |
+| `swap`  | `a b -- b a`     | swap 2 elements on the top of the stack                                                   |
+| `drop`  | `a b -- a`       | drops the top element of the stack                                                        |
+| `dump`  | `a b -- a`       | pop and print the element on top of the stack, (element is treated as unsigned 64bit int) |
+| `over`  | `a b -- a b a`   | copy the element below the top of the stack                                               |
+| `rot`   | `a b c -- c a b` | rotate the top three stack elements                                                       |
 
 #### Comparison
 
@@ -233,12 +227,25 @@ num ,
 - `proc abc int -- int --` defines function named `abc` which takes an `int` as paramter and returns `int`
 - general procedure definition goes like this- `proc procName <inputs> -- <outputs> -- <body> end`
 ```pascal
-proc hello -- int -- // no parameters but returns int
+proc hello -- int --           // no paramters but returns int
     "Hello " 1 1 syscall3 drop // print "Hello" on console using write syscall
-    1 ret // return 1
+    1 ret                      // return 1
 end
-// call the proc like this
-hello dump // dump the int return from procedure
+hello // call the proc like this
+dump  // dump the int return from procedure
+```
+- consider the mean function: `mean(a, b)` which returns `(a + b)/2`, in goof one would do something like this
+```pascal
+proc mean int int -- int -- // this function takes 2 ints as parameters and returns int
+    +                       // add two ints on top of stack (a + b)
+    2 divmod                // divide top of stack by 2
+    // top of stack has two elements: (a+b)/2 and (a+b)%2, check divmod
+    drop                    // drop remainder part
+    ret                     // return (a+b)/2 as output of proc
+end
+
+10 30 mean                  // call the procedure
+dump                        // should print 20
 ```
 - more complex procedures like the factorial procedure can be found in [recursive.goof](./examples/recursive.goof)
 
