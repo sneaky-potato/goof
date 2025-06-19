@@ -1,0 +1,44 @@
+include "std.goof"
+
+const sizeof(ptr) 8 end
+const CMD_ARGS_SIZE 2 end
+
+memory cmd CMD_ARGS_SIZE sizeof(ptr) * end
+memory wstatus 64 end
+
+cmd 0 + "/usr/bin/sleep\x00" swap drop .64
+cmd 8 + "5\x00" swap drop .64
+
+fork 
+if dup 0 = do
+    // child process (pid = 0)
+    "[CMD] " puts
+    0 while dup CMD_ARGS_SIZE < do
+        dup sizeof(ptr) * cmd + ,64 (ptr) dup strlen swap puts
+        " " puts
+        1 +
+    end
+    drop
+    "\n" puts
+
+    // NULL ["/usr/bin/echo", "hello"] "echo"
+    0 cmd cmd ,64 59 syscall3 drop
+elif dup 0 > do
+    // parent process
+    0
+    0
+    wstatus
+    -1
+    wait4
+    if dup 0 < do
+        "[ERROR] could not wait until the child process has finished executing\n" eputs
+        1 exit
+    end
+    drop
+
+    "[PARENT] waiting for child completes\n" eputs
+else
+    "[ERROR] could not fork a child process\n" eputs
+end
+drop
+

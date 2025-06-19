@@ -78,7 +78,7 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
     out.WriteString("    mov [ret_stack_rsp], rax\n")
 
     ip := 0
-    if constants.COUNT_OPS != 55 {
+    if constants.COUNT_OPS != 57 {
         panic("Exhaustive handling in compilation")
     }
 
@@ -323,6 +323,11 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    mov rax, [args_ptr]\n")
             out.WriteString("    add rax, 8\n")
             out.WriteString("    push rax\n")
+        case constants.OP_SYSCALL0:
+            out.WriteString("    ;; -- syscall --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    syscall\n")
+            out.WriteString("    push rax\n")
         case constants.OP_SYSCALL1:
             out.WriteString("    ;; -- syscall --\n")
             out.WriteString("    pop rax\n")
@@ -342,6 +347,15 @@ func CompileToAsm(outputFilePath string, program []model.Operation) {
             out.WriteString("    pop rdi\n")
             out.WriteString("    pop rsi\n")
             out.WriteString("    pop rdx\n")
+            out.WriteString("    syscall\n")
+            out.WriteString("    push rax\n")
+        case constants.OP_SYSCALL4:
+            out.WriteString("    ;; -- syscall --\n")
+            out.WriteString("    pop rax\n")
+            out.WriteString("    pop rdi\n")
+            out.WriteString("    pop rsi\n")
+            out.WriteString("    pop rdx\n")
+            out.WriteString("    pop r10\n")
             out.WriteString("    syscall\n")
             out.WriteString("    push rax\n")
         case constants.OP_SYSCALL6:
