@@ -3,6 +3,7 @@ include "string.goof"
 
 const PUTD_BUFFER_CAP 32 end
 const MEM_CAPACITY    640000 end
+const sizeof(ptr)     8 end
 
 const OP_PUSH_INT 0 end
 const OP_PLUS     1 end
@@ -12,6 +13,8 @@ const OP_DUMP     3 end
 memory putd-buffer PUTD_BUFFER_CAP end
 memory fd          8 end
 memory outputfd    8 end
+memory cmd         32 end
+memory wstatus     64 end
 memory statbuf     sizeof(stat) end
 memory content     sizeof(str) end
 memory line        sizeof(str) end
@@ -191,6 +194,82 @@ proc compile_ops -- --
     "mem: resb " outputfd fputs MEM_CAPACITY fputd "\n" outputfd fputs
 end
 
+proc compile_binary -- --
+
+    cmd 0 + "/usr/bin/nasm\x00" swap drop .64
+    cmd 8 + "-felf64\x00" swap drop .64
+    cmd 16 + "output.asm\x00" swap drop .64
+    
+    fork 
+    if dup 0 = do
+        // child process (pid = 0)
+        "[CMD] " puts
+        0 while dup 3 < do
+            dup sizeof(ptr) * cmd + ,64 (ptr) dup strlen swap puts
+            " " puts
+            1 +
+        end
+        drop
+        "\n" puts
+    
+        0 cmd cmd ,64 execve drop
+    elif dup 0 > do
+        // parent process
+        0
+        0
+        wstatus
+        -1
+        wait4
+        if dup 0 < do
+            "[ERROR] could not wait until the child process has finished executing\n" eputs
+            1 exit
+        end
+        drop
+    
+        // "[PARENT] waiting for child completes\n" eputs
+    else
+        "[ERROR] could not fork a child process\n" eputs
+    end
+    drop
+
+    cmd 0 + "/usr/bin/ld\x00" swap drop .64
+    cmd 8 + "-o\x00" swap drop .64
+    cmd 16 + "output\x00" swap drop .64
+    cmd 24 + "output.o\x00" swap drop .64
+    
+    fork 
+    if dup 0 = do
+        // child process (pid = 0)
+        "[CMD] " puts
+        0 while dup 4 < do
+            dup sizeof(ptr) * cmd + ,64 (ptr) dup strlen swap puts
+            " " puts
+            1 +
+        end
+        drop
+        "\n" puts
+    
+        0 cmd cmd ,64 execve drop
+    elif dup 0 > do
+        // parent process
+        0
+        0
+        wstatus
+        -1
+        wait4
+        if dup 0 < do
+            "[ERROR] could not wait until the child process has finished executing\n" eputs
+            1 exit
+        end
+        drop
+    
+        // "[PARENT] waiting for child completes\n" eputs
+    else
+        "[ERROR] could not fork a child process\n" eputs
+    end
+    drop
+end
+
 proc dump_ops -- --
     0 while dup ops-count ,64 < do
         dup sizeof(Op) * ops +
@@ -271,4 +350,5 @@ end
 
 
 compile_ops
+compile_binary
 
