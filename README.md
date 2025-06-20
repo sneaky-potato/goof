@@ -6,7 +6,6 @@ goof or goForth: a stack-based concatenative programming language inspired by [F
 
 [![CC BY 4.0][cc-by-shield]][cc-by]
 
-
 I made this contraption to learn more about compilers and computer architecture.
 I did not use [LLVM](https://llvm.org/), and kept the target machine `x86_64` linux for this language since I wanted to get insights into the compilation process (and hopefully learn some non-trivial aspects about binaries).
 
@@ -32,7 +31,7 @@ Majority of the project has been inspired from [tsoding](https://www.youtube.com
 
 - Compiled, native, turing complete, check [game of life](./examples/gol.goof) and [rule110](./examples/rule-110.goof) written in goof
 - Static type checking enabled, taken inspiration from [here](https://binji.github.io/posts/webassembly-type-checking/)
-- Self hosted compiler, check [goof.goof](./goof.goof), a compiler for goof written in goof
+- Minimal self hosted compiler, check [goof.goof](./goof.goof), a compiler for goof written in goof (work in progress)
 - Editor config for vim / nvim for goof source files, check [vim.goof](./editor/vim.goof)
 
 ## Usage

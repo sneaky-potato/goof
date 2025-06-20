@@ -8,7 +8,9 @@ const sizeof(ptr)     8 end
 const OP_PUSH_INT 0 end
 const OP_PLUS     1 end
 const OP_MINUS    2 end
-const OP_DUMP     3 end
+const OP_MUL      3 end
+const OP_MOD      4 end
+const OP_DUMP     5 end
 
 memory putd-buffer PUTD_BUFFER_CAP end
 memory fd          8 end
@@ -175,6 +177,20 @@ proc compile_ops -- --
             "    pop rbx\n" outputfd fputs
             "    sub rbx, rax\n" outputfd fputs
             "    push rbx\n" outputfd fputs
+        elif dup ,64 OP_MUL = do
+            "    ;; -- mul --\n" outputfd fputs
+            "    pop rax\n" outputfd fputs
+            "    pop rbx\n" outputfd fputs
+            "    mul rbx\n" outputfd fputs
+            "    push rax\n" outputfd fputs
+        elif dup ,64 OP_MOD = do
+            "    ;; -- mod --\n" outputfd fputs
+            "    xor rdx, rdx\n" outputfd fputs
+            "    pop rbx\n" outputfd fputs
+            "    pop rax\n" outputfd fputs
+            "    div rbx\n" outputfd fputs
+            "    push rax\n" outputfd fputs
+            "    push rdx\n" outputfd fputs
         elif dup ,64 OP_DUMP = do
             "    ;; -- dump --\n" outputfd fputs
             "    pop rdi\n" outputfd fputs
@@ -334,6 +350,10 @@ while content str.count ,64 0 > do
             OP_PLUS     0  push_op
         elif word read_str "-" streq do
             OP_MINUS    0  push_op
+        elif word read_str "*" streq do
+            OP_MUL      0  push_op
+        elif word read_str "divmod" streq do
+            OP_MOD      0  push_op
         elif word read_str "dump" streq do
             OP_DUMP     0  push_op
         else
